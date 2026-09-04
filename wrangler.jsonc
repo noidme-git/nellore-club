@@ -15,9 +15,22 @@
   // strategy, which is the entire distribution channel, reaches nothing, and
   // API.md Appendix A step 2's www -> apex 301 never runs because www never
   // reaches this Worker.
+  // custom_domain, NOT a route pattern. ARCHITECTURE.md §7 originally specified
+  // `{"pattern": "nellore.club/*", "zone_name": "nellore.club"}` and that is wrong
+  // for this zone: a route attaches the Worker to a URL pattern but creates no DNS,
+  // so it only resolves if some proxied record already exists at that hostname. The
+  // only records here were GoDaddy's parking A records, and those had to be deleted
+  // because a custom_domain attach collides with an existing record at the same name
+  // (the same trap optoads.com's config documents). Deploying routes after deleting
+  // them left nellore.club with no address record at all -- the deploy reported
+  // success and the domain went NXDOMAIN.
+  //
+  // custom_domain: true makes Cloudflare create and manage the records itself. Do not
+  // hand-add A/CNAME records for nellore.club or www.nellore.club or the next deploy
+  // will conflict. Note the patterns carry no "/*" -- a custom domain is a hostname.
   "routes": [
-    { "pattern": "nellore.club/*", "zone_name": "nellore.club" },
-    { "pattern": "www.nellore.club/*", "zone_name": "nellore.club" }
+    { "pattern": "nellore.club", "custom_domain": true },
+    { "pattern": "www.nellore.club", "custom_domain": true }
   ],
 
   // PRECONDITION: `npm run build` has produced ./out. `wrangler deploy` uploads
@@ -33,7 +46,22 @@
     // prefixes below are exactly the paths that need Worker logic: the API, the
     // three rewritten shells, the short links, the OG route and the health
     // check. Everything else is served by the asset worker.
+    // "/shell/*" and "/kitchen-sink/*" are additions to ARCHITECTURE.md §7's list.
+    // Both are real files in out/ that must never be served: the shells are the
+    // SPA targets the Worker rewrites /t/<slug> onto, and a crawler that indexed
+    // /shell/tournament/ would rank a tournament-less page for the club's own
+    // name; kitchen-sink is the component gallery. robots.txt asks crawlers not
+    // to look, but robots.txt is a request, not a control -- these need the
+    // Worker to actually 404 them, which it cannot do if it never runs.
+    // "/" is here so the Worker can serve the www -> apex 308. The proper home
+    // for a host-level redirect is a zone Redirect Rule, which costs no Worker
+    // invocation at all -- but no API token on the deploying machine currently
+    // has Zone:Rulesets:Edit, so it cannot be created from here (README has the
+    // recipe). "/" is one extra invocation per homepage view, not the 15-20 that
+    // `run_worker_first: true` would cost, and it is the only page www traffic
+    // actually lands on today. Remove it once the Redirect Rule exists.
     "run_worker_first": [
+      "/",
       "/api/*",
       "/t/*",
       "/p/*",
@@ -41,7 +69,9 @@
       "/j/*",
       "/i/*",
       "/og/t/*",
-      "/healthz"
+      "/healthz",
+      "/shell/*",
+      "/kitchen-sink/*"
     ],
 
     // next.config.mjs sets trailingSlash: true, so every page is
