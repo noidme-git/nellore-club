@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "nellore.club",
+  "short_name": "nellore",
+  "description": "Game tournaments in Nellore — esports, board games and outdoor sports.",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0F14",
+  "theme_color": "#0B0F14",
+  "categories": ["sports", "games", "entertainment"],
+  "shortcuts": [
+    { "name": "Live now", "url": "/live/" },
+    { "name": "Tournaments", "url": "/tournaments/" },
+    { "name": "Leaderboard", "url": "/leaderboard/" }
+  ]
+}

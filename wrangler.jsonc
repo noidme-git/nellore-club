@@ -1,0 +1,124 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "nellore-club",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-01",
+
+  // NO nodejs_compat. SimpleWebAuthn v13 is Workers-native and every hash,
+  // HMAC and AES-GCM operation in worker/lib/crypto.ts is WebCrypto. Adding the
+  // flag would let a Node-only import compile locally and fail at the edge.
+  "compatibility_flags": [],
+
+  // PRECONDITION: the zone `nellore.club` must exist in this Cloudflare account
+  // and its DNS must be proxied. WITHOUT THESE ROUTES the Worker deploys to
+  // *.workers.dev only and never serves nellore.club — so the OG/WhatsApp
+  // strategy, which is the entire distribution channel, reaches nothing, and
+  // API.md Appendix A step 2's www -> apex 301 never runs because www never
+  // reaches this Worker.
+  "routes": [
+    { "pattern": "nellore.club/*", "zone_name": "nellore.club" },
+    { "pattern": "www.nellore.club/*", "zone_name": "nellore.club" }
+  ],
+
+  // PRECONDITION: `npm run build` has produced ./out. `wrangler deploy` uploads
+  // whatever is there; it does not build for you, and `next build` alone (without
+  // scripts/csp-hashes.mjs) ships a site that will not hydrate under the enforced CSP.
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+
+    // ARRAY form, not `true`. `true` routes EVERY request through the Worker,
+    // including every /_next/static/** chunk, every font and every OG PNG, so
+    // one cold page view costs 15-20 Worker invocations instead of 1. The
+    // prefixes below are exactly the paths that need Worker logic: the API, the
+    // three rewritten shells, the short links, the OG route and the health
+    // check. Everything else is served by the asset worker.
+    "run_worker_first": [
+      "/api/*",
+      "/t/*",
+      "/p/*",
+      "/admin/*",
+      "/j/*",
+      "/i/*",
+      "/og/t/*",
+      "/healthz"
+    ],
+
+    // next.config.mjs sets trailingSlash: true, so every page is
+    // out/<path>/index.html. auto-trailing-slash resolves /tournaments and
+    // /tournaments/ to the same asset with no redirect round trip.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+
+  // Created 4 Sep 2026 on "Developer@noidme.com's Account"; db/schema.sql has
+  // been applied to it (104 statements, 31 tables, 114 indexes -- verified by
+  // reading sqlite_master back out of the remote database, not from the API's
+  // success flag).
+  //
+  // A D1 database_id is not a secret: it is meaningless without an API token
+  // scoped to this account, and Cloudflare's own examples commit it. Keeping it
+  // here rather than as a placeholder is what makes a clean checkout deployable.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nellore-club",
+      "database_id": "023cedbd-b1cb-42be-bab0-ab5a5ec9e274"
+    }
+  ],
+
+  // "ratelimits" — PLURAL — and the per-entry key is "name", NOT "binding".
+  // Verified against node_modules/wrangler/config-schema.json (wrangler 4.111):
+  // RawConfig has no `ratelimit` property at all, and unknown top-level keys are
+  // a WARNING, not an error. So `"ratelimit": [{ "binding": ... }]` deploys
+  // cleanly and leaves env.RL_READ ... env.RL_SCORE all `undefined`, at which
+  // point env.RL_READ.limit(...) throws and EVERY endpoint returns 500 on the
+  // first request — a total outage whose cause looks like application code.
+  // assertEnv() (worker/lib/env.ts) asserts each of these has a .limit function
+  // at the top of fetch(), so a config regression fails at boot with a name.
+  "ratelimits": [
+    { "name": "RL_READ", "namespace_id": "1001", "simple": { "limit": 300, "period": 60 } },
+    { "name": "RL_AUTH_BEGIN", "namespace_id": "1002", "simple": { "limit": 20, "period": 60 } },
+    { "name": "RL_AUTH_VERIFY", "namespace_id": "1003", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_RECOVERY", "namespace_id": "1004", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_REGISTER", "namespace_id": "1005", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_GUEST", "namespace_id": "1006", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_GUEST_TOKEN", "namespace_id": "1007", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_WRITE", "namespace_id": "1008", "simple": { "limit": 60, "period": 60 } },
+    { "name": "RL_SCORE", "namespace_id": "1009", "simple": { "limit": 30, "period": 10 } },
+    { "name": "RL_AUTH_READ", "namespace_id": "1010", "simple": { "limit": 120, "period": 60 } },
+    { "name": "RL_ENGINE", "namespace_id": "1011", "simple": { "limit": 20, "period": 60 } }
+  ],
+
+  // 20:00 UTC = 01:30 IST — the nightly cron, AUTH.md §10. Eleven jobs, each its
+  // own batch; one job throwing must not skip the rest.
+  "triggers": { "crons": ["0 20 * * *"] },
+
+  "observability": { "enabled": true },
+
+  // Non-secret configuration only (ARCHITECTURE.md §7.1). Every secret in §7.2
+  // goes through `wrangler secret put` and appears in .dev.vars.example, never
+  // here — this file is committed.
+  "vars": {
+    "ENVIRONMENT": "production",
+    "SITE_ORIGIN": "https://nellore.club",
+    "SIGNUP_OPEN": "1",
+
+    // The launch state: no email provider is bought, so /auth/email/* returns
+    // 501 email_auth_disabled and GET /auth/config reports email_otp: false.
+    // Turning it on needs EMAIL_OTP_ENABLED=1 AND EMAIL_PROVIDER AND EMAIL_FROM
+    // AND the EMAIL_API_KEY secret; any one missing keeps it off.
+    "EMAIL_OTP_ENABLED": "0",
+    "EMAIL_OTP_ALLOW_SIGNUP": "0",
+
+    // Documented upgrade path, never set in v1: /og/t/* always 302s to the
+    // static category card (ARCHITECTURE.md §5.3).
+    "OG_DYNAMIC": "0",
+
+    // "report-only" for exactly one deploy after a CSP change, then back.
+    "CSP_MODE": "enforce",
+
+    // Phone numbers must start +91 unless this is "1".
+    "ALLOW_INTL_PHONE": "0"
+  }
+}

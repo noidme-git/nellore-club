@@ -1,0 +1,30 @@
+# nellore.club
+#
+# Three disallows, each for a different reason:
+#
+#   /shell/   The three SPA shells are real files in out/ but are never linked
+#             and the Worker 404s any direct request to them (IA.md §2.2, Worker
+#             dispatch step 7). A crawler that indexed /shell/tournament/ would
+#             put a document with no tournament in it into search results, and it
+#             would outrank the real /t/<slug>/ URLs for the club's own name.
+#   /admin/   Every byte behind it is authenticated. The Worker also sends
+#             X-Robots-Tag: noindex and Cache-Control: private, no-store there.
+#   /api/     JSON, with its own noindex header. Crawling it is pure cost: it is
+#             the one path class that can reach D1.
+#
+# robots.txt is a request, not an access control. The Worker's predicates are the
+# control (SECURITY.md §4); this file only keeps well-behaved crawlers from
+# spending the club's subrequest budget.
+#
+# /me/, /search/ and /offline/ are deliberately NOT disallowed. They are static
+# documents with no data in them, they are already noindex'd by header, and
+# disallowing a URL stops a crawler from reading the noindex it would otherwise
+# obey — which is how a page ends up indexed with no snippet.
+
+User-agent: *
+Disallow: /shell/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /kitchen-sink/
+
+Sitemap: https://nellore.club/sitemap.xml

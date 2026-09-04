@@ -1,0 +1,52 @@
+{
+  "name": "nellore-club",
+  "version": "0.1.0",
+  "private": true,
+  "description": "nellore.club — tournament platform for the Nellore game club: esports, board games and outdoor sports.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && node scripts/csp-hashes.mjs",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p worker/tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "budget": "node scripts/budget-check.mjs",
+    "seed:games": "tsx scripts/seed-games.ts",
+    "db:local": "wrangler d1 execute nellore-club --local --file=db/schema.sql",
+    "db:seed:local": "wrangler d1 execute nellore-club --local --file=db/seed.sql",
+    "db:remote": "wrangler d1 execute nellore-club --remote --file=db/schema.sql",
+    "db:seed:remote": "wrangler d1 execute nellore-club --remote --file=db/seed.sql",
+    "cf:dev": "npm run build && wrangler dev",
+    "cf:deploy": "npm run build && wrangler deploy",
+    "deploy": "npm run cf:deploy"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.1",
+    "clsx": "2.1.1",
+    "marked": "^18.0.11",
+    "next": "15.5.20",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "ulid": "^3.0.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260716.1",
+    "@types/node": "22.10.2",
+    "@types/react": "19.0.2",
+    "@types/react-dom": "19.0.2",
+    "@typescript-eslint/parser": "^8.19.0",
+    "autoprefixer": "10.4.20",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.4",
+    "postcss": "8.4.49",
+    "tailwindcss": "3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "5.7.2",
+    "vitest": "^3.0.5",
+    "wrangler": "4.111.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

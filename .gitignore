@@ -14,6 +14,12 @@ next-env.d.ts
 .env
 .env.*
 
+# ...but the TEMPLATE must ship. `.dev.vars.*` above matches `.dev.vars.example`,
+# so without this negation the one file that tells a new machine which vars and
+# secrets exist is silently untracked -- and the omission looks like completed
+# work, because the file is present on the machine that wrote it.
+!.dev.vars.example
+
 # Local D1 databases and `wrangler d1 export` output. A dump contains encrypted
 # phone blobs but also every handle, entrant and audit row (SECURITY.md §9).
 *.sqlite
@@ -23,3 +29,13 @@ db/backups/
 
 .DS_Store
 coverage/
+
+# NOT ignored, and the negation is here so nobody "tidies up" a generated file
+# into the list above: worker/csp-hashes.json is a BUILD INPUT, not a build
+# output. `scripts/csp-hashes.mjs` regenerates it from out/**, but the Worker
+# imports it at bundle time to emit a per-page hash CSP (BUILD-PLAN.md Phase 0,
+# SECURITY.md §8.1). Untracked, a clean checkout deploys a Worker with an empty
+# hash table, every page's own theme bootstrap is blocked by script-src, and
+# every dark-mode visitor gets a white flash — with nothing in CI to catch it,
+# because the file is regenerated locally before anyone looks.
+!worker/csp-hashes.json

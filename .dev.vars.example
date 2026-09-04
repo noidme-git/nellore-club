@@ -1,0 +1,128 @@
+# nellore.club — local development environment
+#
+#   cp .dev.vars.example .dev.vars
+#
+# `wrangler dev` reads .dev.vars and merges it over wrangler.jsonc's `vars`, so
+# this one file supplies BOTH the §7.1 vars and the §7.2 secrets locally. In
+# production the vars live in wrangler.jsonc and every secret below goes through
+# `wrangler secret put <NAME>` — none of them may ever appear in a committed file.
+#
+# EVERY VALUE HERE IS A THROWAWAY. They are deliberately obvious placeholders so
+# that a copy-paste into production is caught by eye. Generate real ones with:
+#
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+#
+# ARCHITECTURE.md §7.1 (vars) and §7.2 (secrets) are the authority. assertEnv()
+# in worker/lib/env.ts refuses to serve a single request while a "fail startup"
+# name is missing — a missing pepper must not be able to silently write
+# unverifiable hashes.
+#
+# NOTE: .gitignore has `.dev.vars.*`, which matches THIS FILE. It needs a
+# `!.dev.vars.example` negation line or the example is never committed.
+
+# =====================================================================
+# Vars — non-secret. Mirrored in wrangler.jsonc for production.
+# =====================================================================
+
+# Gates the dev cookie name (nc_session_dev, no Secure) and the localhost origin
+# allowlist. UNSET => fail startup: guessing between production and dev would
+# either reject every local sign-in or ship a non-Secure session cookie.
+ENVIRONMENT=development
+
+# The Origin allowlist for every mutation, and the base of every absolute OG
+# URL. UNSET => fail startup. Must be https: when ENVIRONMENT=production.
+SITE_ORIGIN=http://localhost:8787
+
+# "0" => POST /auth/passkey/register/* returns 403 signup_closed; existing users
+# still sign in. Unset is treated as "1".
+SIGNUP_OPEN=1
+
+# Unset/"0" => /auth/email/* returns 501 email_auth_disabled and
+# GET /auth/config reports email_otp: false. THIS IS THE LAUNCH STATE — there is
+# no email provider, and buying one is not a launch blocker.
+EMAIL_OTP_ENABLED=0
+
+# All three of EMAIL_OTP_ENABLED, EMAIL_PROVIDER and EMAIL_FROM (plus the
+# EMAIL_API_KEY secret) must be set or email stays off. Unset => off.
+EMAIL_PROVIDER=
+EMAIL_FROM=
+
+# "0" => email OTP can sign an existing user in but cannot create an account.
+EMAIL_OTP_ALLOW_SIGNUP=0
+
+# NEVER "1" in v1. /og/t/* always 302s to the static category card; the flag is
+# the documented upgrade path and nothing implements the other branch.
+OG_DYNAMIC=0
+
+# "report-only" emits Content-Security-Policy-Report-Only instead of enforcing.
+# Use it for exactly one deploy after a CSP change, then put it back — a
+# report-only CSP is not a control.
+CSP_MODE=enforce
+
+# Unset => GET /api/v1/config reports turnstile: false and the guest-registration
+# form renders no widget. Guest registration still works, one abuse layer weaker.
+TURNSTILE_SITE_KEY=
+
+# "0" => phone numbers must start +91. Set "1" only if the club ever takes an
+# entrant from outside India.
+ALLOW_INTL_PHONE=0
+
+# =====================================================================
+# Secrets — `wrangler secret put` in production, never a file.
+# =====================================================================
+# The five peppers and IP_HASH_KEY are HMAC-SHA256 keys used as raw UTF-8 bytes,
+# so any high-entropy string works. PII_KEY and PHONE_INDEX_KEY are read as
+# base64url and MUST decode to exactly 32 bytes: PII_KEY is the AES-256-GCM key
+# and a short one would either throw at importKey or silently weaken the cipher.
+
+# HMAC key for sessions.token_hash. UNSET => fail startup; no session could be
+# verified, and the Worker would write hashes it can never check again.
+# Rotating logs everyone out — only on suspected compromise.
+SESSION_PEPPER=dev-only-session-pepper-CHANGE-ME
+
+# HMAC key for recovery_codes.code_hash. UNSET => fail startup.
+# Rotating invalidates every recovery code ever issued. Tell users first.
+RECOVERY_PEPPER=dev-only-recovery-pepper-CHANGE-ME
+
+# HMAC key for entrants.guest_token_hash. UNSET => fail startup.
+# Rotating kills every live guest check-in link; organisers must re-issue them.
+GUEST_PEPPER=dev-only-guest-pepper-CHANGE-ME
+
+# HMAC key for invites.code_hash (/j/ join codes and /i/ roster invites).
+# UNSET => fail startup. Rotating invalidates unused join codes.
+INVITE_PEPPER=dev-only-invite-pepper-CHANGE-ME
+
+# HMAC key for every ip_hash. UNSET => fail startup, because the fallback is
+# storing raw IPs, which the DPDP posture (SECURITY.md §10.3) forbids outright.
+# Rotate yearly; it resets the long-window rate_counters, which is acceptable.
+IP_HASH_KEY=dev-only-ip-hash-key-CHANGE-ME
+
+# AES-256-GCM key for users.phone_enc / entrants.guest_phone_enc /
+# entrant_members.phone_enc. base64url, exactly 32 bytes decoded.
+# UNSET => fail startup if any phone column is non-null; otherwise phone
+# collection is disabled and tournaments with requires_phone are refused at
+# creation. Rotating needs a re-encryption migration.
+PII_KEY=ZGV2LW9ubHktcGlpLWtleS1ub3QtZm9yLXByb2QhISE
+
+# HMAC key for the users.phone_hash blind index. base64url, 32 bytes decoded.
+# Deliberately a DIFFERENT secret from PII_KEY so that a D1 dump plus one leaked
+# key yields either the numbers or a usable index, never both.
+# Rotating needs a re-index migration.
+PHONE_INDEX_KEY=ZGV2LW9ubHktcGhvbmUtaW5kZXgta2V5LU5PVC1QUkQ
+
+# HMAC key for email_otps.code_hash. Required ONLY when EMAIL_OTP_ENABLED=1.
+# Free to rotate — the codes have a 10-minute TTL.
+OTP_PEPPER=dev-only-otp-pepper-CHANGE-ME
+
+# One-shot token for the first-admin ceremony. When unset,
+# GET /auth/bootstrap/status returns {available:false} and the ceremony 404s —
+# WHICH IS THE CORRECT STEADY STATE. Set it, create the admin, delete it again.
+ADMIN_BOOTSTRAP_TOKEN=dev-only-bootstrap-token-CHANGE-ME
+
+# Unset => email stays off regardless of the vars above.
+EMAIL_API_KEY=
+
+# Unset => Turnstile verification is not registered at all (not "failed open at
+# a check" — the check does not exist), and guest registration relies on the
+# rate limiters alone.
+TURNSTILE_SECRET_KEY=

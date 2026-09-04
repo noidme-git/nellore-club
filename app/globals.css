@@ -1,0 +1,493 @@
+/* nellore.club — the token layer. DESIGN.md §2, §3, §4, §11.
+ *
+ * Every colour in the product is a CSS custom property declared here and
+ * referenced through a Tailwind alias (tailwind.config.ts). The light theme is a
+ * RE-DECLARATION of the same properties under [data-theme='light'], never a
+ * second set of utilities, which is why there is not one `dark:` variant in the
+ * codebase — one copy of every utility is what keeps site-wide CSS inside the
+ * 14 KB gz budget of DESIGN.md §9, and a theme swap is a single attribute write.
+ *
+ * Do not add a hex literal to a component. Every foreground/background pair in
+ * this file has a measured contrast ratio in DESIGN.md §2.2/§2.4; a pair that is
+ * not in those tables has not been checked, and the tightest pair in the system
+ * (--fg-faint on --surface-3) is at 4.71.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================================
+ * Fonts — DESIGN.md §3.2
+ *
+ * Self-hosted, never Google Fonts: a third-party origin costs an extra DNS +
+ * TLS handshake on a 400 ms-RTT link and forces connect-src/font-src holes in
+ * the CSP. The woff2 files are a separate deliverable; until they land, `swap`
+ * plus the metric-matched fallback below renders correct, stable text rather
+ * than tofu or a layout shift.
+ * ===================================================================== */
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-var-subset.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  /* Exactly the characters the UI can produce, plus ₹ (U+20B9), the arrow the
+     bracket uses (U+2192) and the tick (U+2713). Full Latin coverage is ~95 KB
+     against ~24 KB for this. */
+  unicode-range: U+0000-00FF, U+2013-2014, U+2018-201D, U+2022, U+2026, U+2192, U+20B9, U+2713,
+    U+25CF;
+}
+
+/* Metric-matched fallback so `swap` causes ~zero layout shift. These are the
+   measured Inter-vs-Arial adjustments; do not "tidy" them to round numbers. */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('Roboto'), local('Helvetica Neue');
+  ascent-override: 90.49%;
+  descent-override: 22.56%;
+  line-gap-override: 0%;
+  size-adjust: 107.06%;
+}
+
+/* NOT preloaded. `unicode-range` means the browser fetches this file only when a
+   Telugu codepoint is actually painted, so ~95% of page views never pay the
+   46 KB. Nirmala UI / Gautami / Telugu Sangam MN are in the stack (see
+   tailwind.config.ts) so the pre-download paint is correct Telugu, not tofu. */
+@font-face {
+  font-family: 'Noto Sans Telugu';
+  src: url('/fonts/noto-telugu-var.woff2') format('woff2-variations');
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range: U+0C00-0C7F, U+200C-200D;
+}
+
+@layer base {
+  /* ===================================================================
+   * DARK THEME — the default. DESIGN.md §2.2.
+   *
+   * These live on :root and not on [data-theme='dark'] on purpose: the theme
+   * bootstrap in app/layout.tsx runs before first paint, but if it is ever
+   * blocked (CSP failure, JS disabled, a crawler) the page must still render a
+   * complete palette rather than unstyled black-on-white.
+   *
+   * Dark is the default because the audience skews gaming, the site is used at
+   * night at venues, and OLED phones are common — not because light is an
+   * afterthought. §2.4 is fully specified and is what a 45-year-old reading a
+   * rules page in daylight gets.
+   * =================================================================== */
+  :root {
+    color-scheme: dark;
+
+    --bg: #0b0f14; /* page ground */
+    --surface: #131a23; /* card, sheet, header */
+    --surface-2: #1c2634; /* nested card, table header, input, tab strip */
+    --surface-3: #243040; /* hover / pressed / selected row */
+
+    /* --line is DECORATIVE ONLY (1.61 on --bg). Any border that communicates
+       the boundary of an interactive control — input, checkbox, radio, match
+       node, segmented-control divider — must use --line-strong, which is the
+       token that passes WCAG 1.4.11 against every surface. */
+    --line: #2c3846;
+    --line-strong: #6b7a8c;
+
+    --fg: #f2f6fa; /* primary text */
+    --fg-muted: #a9b7c6; /* secondary text, labels */
+    --fg-faint: #8c9bad; /* tertiary text, timestamps, meta */
+
+    /* Amber means "you", "your action", or "winning": primary button, active
+       tab, winner bar, champion badge, prize figure. There is NO amber status
+       pill anywhere in the product (DESIGN.md §2.3) — the status ramp is
+       green/cyan/red/slate, so amber never has to mean two things at once. */
+    --brand: #ffc043;
+    --brand-bright: #ffd98a;
+    --brand-tint: #2b2110;
+    --on-brand: #0b0f14;
+    /* In dark mode the brand ink and the brand fill are the same colour, so one
+       component recipe (`text-brand` for ink, `bg-brand-fill` for fills) serves
+       both themes. In light mode they diverge — see §2.4. */
+    --brand-fill: var(--brand);
+
+    --info: #5cc8f5; /* links, scheduled state, informational */
+    --info-tint: #0c2734;
+    --ok: #3dd68c; /* registration open, success, confirmed */
+    --ok-tint: #0f2a20;
+    --live: #ff6b6b; /* live match, destructive action, error */
+    --live-tint: #2e1414;
+
+    /* Cyan, not amber: the ring has to stay visible ON the amber button. */
+    --focus: #5cc8f5;
+
+    /* Elevation. In dark mode shadows are nearly invisible, so levels 1 and 2
+       are expressed by surface step + hairline and carry no shadow at all.
+       This is the rule most dark themes get wrong. DESIGN.md §4.3. */
+    --shadow-1: none;
+    --shadow-2: none;
+    --shadow-3: 0 24px 48px -12px rgb(0 0 0 / 0.7);
+
+    /* Motion. DESIGN.md §4.4 — anything not in that eight-item inventory
+       should not move. */
+    --dur-1: 120ms; /* press, hover, colour change */
+    --dur-2: 200ms; /* toast in/out, tab underline slide, chip swap */
+    --dur-3: 280ms; /* bottom sheet, modal, route transition */
+    --dur-4: 420ms; /* bracket advance flash, score change flash — fires once */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1); /* ONLY the winner-advance */
+
+    /* ---------------------------------------------------------------
+     * Full ramps — DESIGN.md §2.5.
+     *
+     * Only the semantic tokens above may appear in a component recipe. These
+     * exist so a one-off surface or a chart reaches for an in-between step
+     * that has already been checked, instead of inventing a hex.
+     * --------------------------------------------------------------- */
+    --ink-50: #f2f6fa;
+    --ink-100: #dfe7ef;
+    --ink-200: #c2cedc;
+    --ink-300: #a9b7c6;
+    --ink-400: #8c9bad;
+    --ink-500: #6b7a8c;
+    --ink-600: #4e5d6e;
+    --ink-700: #364454;
+    --ink-800: #243040;
+    --ink-850: #1c2634;
+    --ink-900: #131a23;
+    --ink-950: #0b0f14;
+
+    --amber-50: #fff6e3;
+    --amber-100: #ffe9b8;
+    --amber-200: #ffd98a;
+    --amber-300: #ffc043;
+    --amber-400: #f0a81e;
+    --amber-500: #c98a12;
+    --amber-600: #a06d0c;
+    --amber-700: #7a4e00;
+    --amber-800: #5c3b00;
+    --amber-900: #3b2500;
+
+    --sky-50: #e6f6fe;
+    --sky-100: #c3eafc;
+    --sky-200: #94dbfa;
+    --sky-300: #5cc8f5;
+    --sky-400: #2faee0;
+    --sky-500: #1b8cbb;
+    --sky-600: #0a5e85;
+    --sky-700: #08496a;
+    --sky-800: #06364e;
+    --sky-900: #0c2734;
+
+    --mint-50: #e4faf0;
+    --mint-100: #bdf2dc;
+    --mint-200: #86e7be;
+    --mint-300: #3dd68c;
+    --mint-400: #1fb973;
+    --mint-500: #149660;
+    --mint-600: #0e6b45;
+    --mint-700: #0a5233;
+    --mint-800: #073b25;
+    --mint-900: #0f2a20;
+
+    --rose-50: #feecea;
+    --rose-100: #fdd3cf;
+    --rose-200: #ffa9a6;
+    --rose-300: #ff6b6b;
+    --rose-400: #ed4b4b;
+    --rose-500: #d02f2f;
+    --rose-600: #b3261e;
+    --rose-700: #8a1d17;
+    --rose-800: #64150f;
+    --rose-900: #2e1414;
+  }
+
+  /* ===================================================================
+   * LIGHT THEME — DESIGN.md §2.4.
+   *
+   * THE LIGHT-MODE AMBER RULE: #FFC043 on white is 1.61:1 and is never used as
+   * text or as an icon here. --brand is the bronze #7A4E00 (7.20 on white);
+   * --brand-fill stays amber and only ever carries --on-brand text on top.
+   * A component that uses `text-brand` for ink and `bg-brand-fill` for fills is
+   * correct in both themes with no branch.
+   * =================================================================== */
+  [data-theme='light'] {
+    color-scheme: light;
+
+    --bg: #ffffff;
+    --surface: #f5f8fb;
+    --surface-2: #e9eff5;
+    --surface-3: #dce5ee;
+    --line: #dde4ec;
+    --line-strong: #6f7f92;
+
+    --fg: #0b0f14;
+    --fg-muted: #46566a;
+    --fg-faint: #516275;
+
+    --brand: #7a4e00; /* brand as text/icon — bronze */
+    --brand-bright: #5c3b00; /* hover state for brand text */
+    --brand-fill: #ffc043; /* brand as a fill: buttons, winner bar, underline */
+    --brand-tint: #fff0d4;
+    --on-brand: #0b0f14;
+
+    --info: #0a5e85;
+    --info-tint: #ddf0fa;
+    --ok: #0e6b45;
+    --ok-tint: #dff5ea;
+    --live: #b3261e;
+    --live-tint: #fde7e5;
+
+    --focus: #0a5e85;
+
+    --shadow-1: 0 1px 2px rgb(11 15 20 / 0.06), 0 1px 1px rgb(11 15 20 / 0.04);
+    --shadow-2: 0 4px 12px -4px rgb(11 15 20 / 0.1), 0 2px 4px -2px rgb(11 15 20 / 0.06);
+    --shadow-3: 0 24px 48px -16px rgb(11 15 20 / 0.22), 0 8px 16px -8px rgb(11 15 20 / 0.12);
+  }
+
+  html {
+    /* IA.md §8.1: keep a keyboard-focused element clear of the sticky header
+       and the bottom tab bar. Without these, Tab lands on a control that is
+       underneath the chrome — a WCAG 2.2 §2.4.11 failure that is invisible on
+       a desktop and constant on a phone. */
+    scroll-padding-top: 64px;
+    scroll-padding-bottom: calc(56px + env(safe-area-inset-bottom) + 8px);
+    /* Anchor navigation and focus moves are smooth by default; the
+       reduced-motion block below forces this back to `auto`. */
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg font-sans text-base text-fg antialiased;
+    /* Telugu hyphenation is wrong in every engine, and English hyphenation adds
+       nothing at 16 px on a 360 px screen. DESIGN.md §3.3. */
+    hyphens: none;
+  }
+
+  /* DESIGN.md §3.3 prose defaults. `pretty` prevents a one-word last line;
+     `balance` keeps a two-line tournament title from breaking 6 words / 1 word. */
+  p {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* Never `outline: none` without a replacement (WCAG 2.4.11/2.4.13). .nc-focus
+     below is the replacement; this only removes the default so the two rings do
+     not double up. */
+  :focus-visible {
+    outline: none;
+  }
+
+  /* The horizontal rule of the whole system: no backdrop-filter anywhere. It is
+     the single most expensive effect on mid-range Android GPUs and it makes a
+     sticky header stutter on scroll. Sticky surfaces are opaque. */
+}
+
+@layer components {
+  /* One focus treatment for the whole product. The 2 px offset renders in the
+     page colour, which is what guarantees the ring is legible even sitting on
+     the amber fill of a primary button. DESIGN.md §5. */
+  .nc-focus {
+    @apply outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
+  }
+
+  /* Expands a visually small control to a 44 x 44 hit area without changing
+     layout (WCAG 2.2 §2.5.8). `position: relative` is not in DESIGN.md §5's
+     snippet but is required: without it the pseudo-element is positioned
+     against the nearest positioned ancestor, so the hit area silently lands
+     somewhere else on the page — which looks like nothing at all until someone
+     misses a close button on a phone. */
+  .nc-hit {
+    position: relative;
+  }
+
+  .nc-hit::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@layer utilities {
+  /* MANDATORY on every score cell, points table, leaderboard points column,
+     seed number, countdown, ₹ amount and match number. Without tabular figures
+     a score changing from 9 to 10 shifts the whole column and the eye loses its
+     place — on a projector, mid-final. `slashed-zero` disambiguates 0 from O in
+     a room code. DESIGN.md §3.3. */
+  .nums-tab {
+    font-variant-numeric: tabular-nums slashed-zero;
+  }
+
+  .nums-prop {
+    font-variant-numeric: proportional-nums;
+  }
+
+  /* Visually hidden but present in the accessible tree: the skip link before it
+     is focused, the route-change announce region (IA.md §8.1), the "Skip to
+     accessible table of this bracket" link. */
+  .nc-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Opt-in marker for a transition that animates ONLY opacity. The
+     reduced-motion block clamps these to 120 ms instead of 1 ms, so an
+     appearance change stays perceivable rather than instant-popping.
+     DESIGN.md §4.4. */
+  .nc-fade {
+    transition-property: opacity;
+  }
+}
+
+/* =====================================================================
+ * Reduced motion — DESIGN.md §4.4.
+ *
+ * Outside @layer so it wins over utilities without needing !important on every
+ * declaration (it still needs it against Tailwind's own `duration-*`, which is
+ * a utility of equal specificity).
+ * ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  /* The one exception: opacity-only transitions stay at 120 ms. Reduced motion
+     means "do not move things", not "make state changes imperceptible". */
+  .nc-fade {
+    transition-duration: 120ms !important;
+  }
+
+  /* The live dot loses its pulse and gains a static ring instead, so "live" is
+     still communicated by more than colour. */
+  .animate-nc-pulse {
+    animation: none !important;
+    outline: 2px solid var(--live);
+    outline-offset: 2px;
+  }
+}
+
+/* =====================================================================
+ * Print — DESIGN.md §11.
+ *
+ * This is not a nicety. /admin/t/<slug>/print/ is the entire offline disaster
+ * plan (OPERATIONS.md §12): when the venue wifi dies mid-event, the printed
+ * pack is how the tournament finishes.
+ *
+ * Two hooks components use, because CSS cannot decide these on its own:
+ *   [data-print="hide"]  removed from the printed page (the bracket tree, the
+ *                        share bar, the poller's freshness chip)
+ *   [data-print="only"]  hidden on screen, shown on paper (the Table view of
+ *                        the bracket — a tree does not paginate, DESIGN.md §11)
+ *   [data-print-url]     its value is appended as visible text, so a draw
+ *                        pinned to the notice board carries its own URL
+ * ===================================================================== */
+[data-print='only'] {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  /* Force the light palette whatever the reader's theme was. Printing the dark
+     theme empties a toner cartridge and produces an unreadable sheet. */
+  :root,
+  [data-theme='dark'],
+  [data-theme='light'] {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f2f2f2;
+    --surface-3: #e6e6e6;
+    --line: #b0b0b0;
+    --line-strong: #444444;
+    --fg: #000000;
+    --fg-muted: #333333;
+    --fg-faint: #555555;
+    --brand: #000000;
+    --brand-bright: #000000;
+    --brand-fill: #d9d9d9;
+    --brand-tint: #f0f0f0;
+    --on-brand: #000000;
+    --info: #000000;
+    --info-tint: #f0f0f0;
+    --ok: #000000;
+    --ok-tint: #f0f0f0;
+    --live: #000000;
+    --live-tint: #f0f0f0;
+    --focus: #000000;
+    --shadow-1: none;
+    --shadow-2: none;
+    --shadow-3: none;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Chrome that means nothing on paper. */
+  header nav,
+  nav,
+  footer,
+  button,
+  [role='button'],
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  [data-print='only'] {
+    display: revert !important;
+  }
+
+  /* Every accordion is expanded: a folded FAQ or a collapsed round prints as a
+     blank line, and there is nobody to click it. */
+  details:not([open]) > *:not(summary) {
+    display: revert !important;
+  }
+
+  [data-print-url]::after {
+    content: ' — ' attr(data-print-url);
+    font-weight: 400;
+    word-break: break-all;
+  }
+
+  /* Do not split a match node, a standings row or a fixture across two sheets;
+     a half-printed score is worse than a second page. */
+  tr,
+  li,
+  [data-print-keep] {
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+}

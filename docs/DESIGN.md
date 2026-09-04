@@ -969,10 +969,26 @@ So:
    all" here as a stated constant:
 
    ```
-   FRAMEWORK_FLOOR = <measured> KB gz     // next 15.5.20 + react 19.0.0, measured YYYY-MM-DD
+   FRAMEWORK_FLOOR = 102 KB gz     // next 15.5.20 + react 19.0.0, measured 2026-09-04
    ```
 
    `BUILD-PLAN.md`'s foundation phase carries this as an explicit gate.
+
+   **Measured, Phase 0 integration, 2026-09-04.** `next build` on the empty shell (`app/layout.tsx`,
+   `app/not-found.tsx` and the three `app/shell/*` placeholders — no feature routes, no components,
+   no fetches) reports `First Load JS shared by all  102 kB`, made of
+   `chunks/255-*.js 46.4 kB` + `chunks/4bd1b696-*.js 54.2 kB` + `1.89 kB` of runtime. Independently
+   confirmed with `gzip -9`: 46,405 + 54,257 + 1,690 + 255 = **102,607 B**, so Next's figure is
+   gzipped and the two agree. Site CSS at the same commit is **7.3 KB gz**, inside the 14 KB ceiling.
+
+   **This floor breaks the §9.2 public ceiling, and rule 4 below applies.** At 102 KB,
+   `/t/<slug>/bracket/` budgets to 102 + 45 = 147 KB JS, and with 8 KB HTML + 11 KB CSS + 24 KB
+   fonts the route transfers ≈ 190 KB against a 180 KB ceiling that "does not move with the floor".
+   `/t/<slug>/` lands at ≈ 185 KB. The three prerendered public routes still fit (`/` ≈ 171 KB,
+   `/tournaments/` ≈ 168 KB, `/leaderboard/` ≈ 165 KB) but with < 12 KB of headroom each. Per rule 4
+   the answer is to cut scope or change the framework on the two shell routes — not to raise the
+   allowance. This is an open escalation for W7 and is stated here so the first budget failure is
+   attributable to the floor rather than to whoever last added an import.
 2. **Every route budget is `FRAMEWORK_FLOOR + a route allowance`**, and the allowance is what the
    team actually controls:
 
