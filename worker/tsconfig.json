@@ -1,0 +1,24 @@
+{
+  // The Worker runs on workerd, not Node and not the browser. It gets its own
+  // config so the app's DOM lib and JSX settings never leak into worker code,
+  // and so `npm run typecheck` checks both sides independently.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "paths": {
+      "@/*": ["../*"]
+    }
+  },
+  "include": ["**/*.ts", "../lib/**/*.ts"],
+  "exclude": ["../node_modules"]
+}

@@ -1,0 +1,380 @@
+{
+  "$schema_version": 1,
+  "$doc": "Club-level content for nellore.club. Anything the owner must confirm before launch is listed in `todo_verify` and left as null here, so a fake phone number or address can never render. Run `grep -rn TODO_VERIFY content/` before every deploy.",
+
+  "identity": {
+    "name": "Nellore Club",
+    "short_name": "Nellore Club",
+    "wordmark": "nellore.club",
+    "legal_name": null,
+    "domain": "nellore.club",
+    "url": "https://nellore.club",
+    "tagline": "Nellore's tournament club.",
+    "tagline_long": "Tournaments for Nellore — on the phone, on the board, and on the ground.",
+    "founded_year": 2026,
+    "timezone": "Asia/Kolkata",
+    "timezone_label": "IST",
+    "currency": "INR",
+    "currency_symbol": "₹",
+    "locale": "en-IN",
+    "languages": ["English", "Telugu"],
+    "language_note": "The site is in English. Organizers speak Telugu and English at every event, and the WhatsApp announcements go out in both."
+  },
+
+  "story": {
+    "headline": "We run tournaments. That is the whole idea.",
+    "paragraphs": [
+      "Every week somebody in this city puts together a box cricket match on WhatsApp, a BGMI scrim in a group of forty, a carrom knockout in a friend's hall. It works right up until it doesn't. The bracket lives in one person's Notes app, the fixture changes three times, and half the players never find out who won.",
+      "Nellore Club exists to fix exactly that. One link. The draw, the fixtures, the live scores and the final table, all on a page that opens on a mid-range phone on ordinary 4G. You send the link to the group. Everybody sees the same thing at the same time, including the people who couldn't come.",
+      "We run events across three worlds and treat all three seriously: esports on phones and PCs, board and mind games like chess, carrom and scrabble, and outdoor sport — box cricket, badminton, volleyball, throwball and kabaddi. A chess Swiss and a BGMI points series are not the same maths, and the platform knows the difference. What does not change is the promise: a published draw before the first ball, scores entered as they happen, a standings table you can argue with because you can see how it was built, and prize money paid the same day.",
+      "Nellore has never been short of players. It has been short of organisers with a system. We are the system."
+    ],
+    "what_we_do": [
+      "Run open tournaments across esports, board games and outdoor sport — usually two or three a month.",
+      "Publish a live bracket for every event that anyone can open, on any phone, without an account.",
+      "Keep a season leaderboard across every game, so a regular carrom player and a regular BGMI squad end up on the same board.",
+      "Host free club nights for players who want a game without entering a paid draw.",
+      "Run private events for schools, colleges, apartment associations and companies in and around Nellore."
+    ],
+    "why_trust_us": [
+      "The draw is published before the event starts and does not move.",
+      "Scores are entered live, in front of the players, and every change is stamped with who made it.",
+      "The prize table is printed on the tournament page before registration opens. It does not shrink on the day.",
+      "You do not need a password. You sign in with your phone's fingerprint or face unlock.",
+      "We do not sell, rent or share your phone number. Ever."
+    ],
+    "stats": [
+      { "key": "tournaments_run", "label": "Tournaments run", "value": null, "suffix": "" },
+      { "key": "players_registered", "label": "Players registered", "value": null, "suffix": "" },
+      { "key": "prize_money_paid", "label": "Prize money paid", "value": null, "prefix": "₹" },
+      { "key": "games_supported", "label": "Games supported", "value": 20, "suffix": "" }
+    ],
+    "stats_note": "A stat with a null value is not rendered. Do not put estimates here — fill these in from the database after the first season."
+  },
+
+  "contact": {
+    "email": null,
+    "phone": null,
+    "whatsapp": null,
+    "whatsapp_group_invite": null,
+    "whatsapp_channel": null,
+    "instagram": null,
+    "youtube": null,
+    "telegram": null,
+    "response_time_note": "WhatsApp is the fastest way to reach us. We answer between 10 AM and 10 PM IST, usually within an hour on an event day.",
+    "render_rule": "A channel whose value is null must not be rendered at all — no dead tel:, mailto: or https:// link, and no greyed-out icon."
+  },
+
+  "location": {
+    "city": "Nellore",
+    "city_alt_names": ["Sri Potti Sriramulu Nellore", "Nellore City"],
+    "district": "Sri Potti Sriramulu Nellore",
+    "state": "Andhra Pradesh",
+    "country": "India",
+    "country_code": "IN",
+    "area": null,
+    "address_lines": null,
+    "pincode": null,
+    "map_url": null,
+    "geo": { "lat": 14.4426, "lng": 79.9865, "accuracy": "city_centre", "note": "City-centre coordinates for the map pin and LocalBusiness schema. Replace with the real venue coordinates once there is a fixed address." },
+    "service_area": [
+      "Nellore city",
+      "Kavali",
+      "Gudur",
+      "Venkatagiri",
+      "Sullurpeta",
+      "Naidupeta",
+      "Atmakur"
+    ],
+    "venue_policy": "We do not own a ground. Each event names its venue on the tournament page at least four days before the date, with a Google Maps pin, the nearest landmark and the reporting time. Esports events that run online say so on the same line.",
+    "venues": []
+  },
+
+  "faq": [
+    {
+      "q": "How do I enter a tournament?",
+      "a": "Open the tournament page, tap Register, and fill in the form. It asks only for what that game actually needs — a BGMI squad needs four in-game IDs, a chess entry needs your rating if you have one, a cricket team needs a captain's number and a jersey colour. If the event has an entry fee you pay by UPI and enter the 12-digit reference number the payment app shows you. Your place is confirmed once an organizer matches that reference against the club account, usually the same evening.",
+      "tags": ["registration"]
+    },
+    {
+      "q": "Do I need a password?",
+      "a": "No. Nellore Club uses passkeys. The first time you sign in, your phone asks for your fingerprint, face unlock or screen lock, and that becomes your login. There is no password to forget and nothing to leak. It works on any Android phone running Android 9 or later, any iPhone on iOS 16 or later, and Chrome or Safari on a laptop.",
+      "tags": ["account", "auth"]
+    },
+    {
+      "q": "What if I lose my phone?",
+      "a": "When you create your account we show you ten one-time recovery codes. Screenshot them or write them down. Any one of them signs you in on a new device, and each one works exactly once. If you have lost both your phone and your codes, message an organizer on WhatsApp from a number that matches a registration you have already made and we will verify you by hand.",
+      "tags": ["account", "auth"]
+    },
+    {
+      "q": "How do I pay the entry fee?",
+      "a": "UPI. The tournament page shows the club's UPI ID and a Pay button that opens GPay, PhonePe or Paytm with the amount and reference already filled in. After paying, come back and enter the 12-digit UTR or reference number from your payment app. Do not send money to any number an individual gives you in a WhatsApp group — pay only to the UPI ID printed on the tournament page.",
+      "tags": ["payment", "money"]
+    },
+    {
+      "q": "How long does payment confirmation take?",
+      "a": "An organizer checks payments against the club's bank statement in batches, so it is manual and it is not instant. Expect confirmation within a few hours, and always before check-in closes. If check-in is about to close and you are still marked unpaid, message us with your reference number and we will clear it on the spot.",
+      "tags": ["payment", "money"]
+    },
+    {
+      "q": "Can I get a refund?",
+      "a": "Yes, if you tell us at least 48 hours before the event starts — the full amount goes back to the same UPI ID within three working days. Inside 48 hours the fee is not refundable, but you can hand your slot to another player or team by messaging an organizer. If we cancel or abandon an event, everybody is refunded in full whether or not a ball was bowled.",
+      "tags": ["payment", "money", "policy"]
+    },
+    {
+      "q": "When is the prize money paid?",
+      "a": "By UPI, on the day, before the venue closes. The prize table is published on the tournament page before registration opens and does not change afterwards. For a team event the whole prize goes to the captain's UPI ID and the team splits it — we do not split it for you. Winnings above ₹10,000 need a PAN number and tax is deducted at source as the law requires.",
+      "tags": ["prize", "money"]
+    },
+    {
+      "q": "I don't have a team. Can I still play a team event?",
+      "a": "Yes. Most team events have a free-agent list. Register as a free agent and we put you in the pre-event WhatsApp group with the other free agents so squads can pick you up. If nobody does by check-in, your entry fee comes straight back.",
+      "tags": ["registration", "teams"]
+    },
+    {
+      "q": "Where do I get the room code for a BGMI or Free Fire match?",
+      "a": "The room ID and password go to the registered captain's WhatsApp number about ten minutes before the match, and appear on the match page for checked-in players at the same time. They are never posted in a public group. Anyone who leaks a room code is removed from the event and does not get a refund.",
+      "tags": ["esports", "matchday"]
+    },
+    {
+      "q": "What happens if my opponent doesn't turn up?",
+      "a": "There is a ten-minute grace period from the scheduled start. After that the organizer records a walkover and you advance. If neither side shows up, both are out and the slot moves on. Walkovers count as wins for the bracket but earn fewer leaderboard points than a match that was actually played.",
+      "tags": ["matchday", "rules"]
+    },
+    {
+      "q": "I think a score was entered wrong. What do I do?",
+      "a": "Raise it with the organizer within 30 minutes of the match finishing, in person or on WhatsApp, with whatever evidence you have — a scoreboard screenshot, a photo of the score sheet, a video. The organizer's decision on the day is final for the day. If you still think it is wrong, you have 24 hours to appeal to the club head, and that decision closes it. After results are published, nothing is reopened except for a plain arithmetic error.",
+      "tags": ["disputes", "rules"]
+    },
+    {
+      "q": "It's raining. Is the match on?",
+      "a": "Outdoor events post a call on the tournament page and in the WhatsApp group by 7 AM on the day. If we abandon partway, group matches already played stand, unplayed group matches are recorded as no-result with points shared, and knockouts are rescheduled to the next available date. Nobody loses their entry fee for weather.",
+      "tags": ["matchday", "outdoor"]
+    },
+    {
+      "q": "Is there an age limit?",
+      "a": "It depends on the game — each tournament page shows the minimum age. Nothing on this platform involves betting or real-money gaming, so it is not restricted on that basis. Players under 18 must give a parent or guardian's WhatsApp number at registration, and we send that guardian a consent message before the player's first match.",
+      "tags": ["policy", "age"]
+    },
+    {
+      "q": "What do you do with my phone number?",
+      "a": "We use it to send you your fixtures, your room codes and your results, and to reach you if a schedule changes. That is all. It is never shown on a public page, never sold, never handed to a sponsor, and never used for marketing you did not ask for. You can ask us to delete your account and everything personal in it at any time — the completed match results stay, but with your name replaced by a player number.",
+      "tags": ["privacy", "policy"]
+    },
+    {
+      "q": "Can you run a tournament for my college or my company?",
+      "a": "Yes, and it is the thing we most like doing. Tell us the game, the number of teams and the date, and we bring the format, the bracket, the scoring and the live page. You bring the venue and the players. Message us on WhatsApp with a rough date and we will come back with a plan and a cost.",
+      "tags": ["private", "business"]
+    },
+    {
+      "q": "Does it cost anything to follow a tournament?",
+      "a": "No. Brackets, fixtures, live scores, standings and the leaderboard are open to everybody with no account and no app. You only need an account to enter an event.",
+      "tags": ["general"]
+    }
+  ],
+
+  "code_of_conduct": {
+    "title": "Fair play at Nellore Club",
+    "summary": "Play hard, play clean, and accept the result. We run events for a small city where everyone will meet again next month, so the standard here is simple: don't cheat, don't abuse anybody, and don't make the organizer's job harder than it already is.",
+    "principles": [
+      {
+        "title": "Play it straight",
+        "body": "No cheats, no mods, no emulators in phone-only events, no engine help in chess, no ringers playing under someone else's name. If a tool gives you an advantage the rules didn't grant you, it's cheating, whether or not the rules named it."
+      },
+      {
+        "title": "You are who you registered as",
+        "body": "The person named on the entry is the person who plays. Squads play with the players on the roster and the substitute they listed. Impersonation removes the whole team from the event and forfeits the entry fee."
+      },
+      {
+        "title": "Speak to people like they're standing in front of you",
+        "body": "Casteist, communal or sexual abuse, and any threat, ends your event immediately and can end your membership. This applies in the venue, in the lobby, in voice chat and in the WhatsApp group."
+      },
+      {
+        "title": "The organizer runs the event",
+        "body": "The organizer's call on the day is final for the day. Disagree with it through the dispute process, not by refusing to play or by arguing in the group."
+      },
+      {
+        "title": "No betting",
+        "body": "Nellore Club events have a fixed entry fee and a published prize table. Side bets between players are not permitted at our venues or in our groups. An event where side betting is seen is stopped on the spot."
+      },
+      {
+        "title": "Leave the venue better than you found it",
+        "body": "Ground, court, hall or turf, it belongs to somebody else. Clear your bottles and your wrappers. We would like to be invited back."
+      }
+    ],
+    "specific_rules": [
+      "Esports: phone-only events are phone-only. No emulators, tablets, triggers, external controllers or third-party overlays. Device checks happen at LAN events and refusing one is a forfeit.",
+      "Esports: teaming with another squad in a battle royale disqualifies every squad involved, and the entry fee is not returned.",
+      "Chess, carrom and scrabble: phones are switched off and in a bag. A phone that rings loses that game. A phone found in hand during a game loses the game.",
+      "Chess: the arbiter's ruling under the FIDE Laws of Chess is final at the board.",
+      "Outdoor: sports shoes on turf, no spikes. No alcohol, no smoking and no chewing tobacco inside a venue.",
+      "Kabaddi: no oil, no sweat cream, nails cut. The referee checks before each match and a player who fails does not play.",
+      "All games: showing up under the influence ends your event."
+    ],
+    "penalties": [
+      { "step": 1, "label": "Warning", "meaning": "Recorded against the player or team for the event. Two warnings in one event become a point deduction." },
+      { "step": 2, "label": "Point deduction", "meaning": "A fixed deduction from the match or standings total, announced to both sides at the time." },
+      { "step": 3, "label": "Match forfeit", "meaning": "The match is awarded to the opponent 'by conduct'. It reads as a walkover on the bracket with a note." },
+      { "step": 4, "label": "Tournament disqualification", "meaning": "Removed from the event. Entry fee is not refunded. Any prize already earned in that event is void." },
+      { "step": 5, "label": "Club ban", "meaning": "Barred from entering any Nellore Club event for a stated period, from one month to permanent. Only the club head can impose or lift a ban." }
+    ],
+    "escalation_note": "Serious cheating, abuse or violence skips straight to step 4 or 5. There is no obligation to warn first.",
+    "appeals": "Appeal a penalty to the club head within 24 hours of the event ending, on WhatsApp, with your reasons and any evidence. You will get an answer within 72 hours. That answer is the end of it.",
+    "reporting": "Report a problem to any organizer at the venue, or on WhatsApp. Reports about abuse or harassment are handled privately and we do not name the person who reported unless they ask us to."
+  },
+
+  "policies": {
+    "entry_fee": {
+      "summary": "Every paid event shows its entry fee in ₹ on the tournament page before registration opens. There are no additional charges — no convenience fee, no platform fee, no service charge added at the end.",
+      "method": "UPI only. Cash is accepted at the venue for walk-in entries where a tournament allows it, against a written receipt.",
+      "upi_id": null,
+      "upi_display_name": null
+    },
+    "refunds": {
+      "cancel_by_player_48h_plus": "Full refund to the same UPI ID within 3 working days.",
+      "cancel_by_player_under_48h": "No refund, but the slot can be transferred to another player or team with the organizer's approval.",
+      "cancelled_by_club": "Full refund to everyone within 3 working days, regardless of how much of the event was played.",
+      "abandoned_midway": "Full refund if no knockout match was played. Otherwise the prize table is scaled to the stage reached and announced before any payout.",
+      "no_show": "No refund.",
+      "free_agent_unmatched": "Full refund if no team picks you up before check-in closes."
+    },
+    "prizes": {
+      "summary": "The prize table is published before registration opens and does not change. Prizes are paid by UPI on the day of the event, before the venue closes.",
+      "team_payout": "For team events, the full prize goes to the registered captain's UPI ID. The team splits it among themselves. The club does not split team prizes.",
+      "tax_note": "Winnings over ₹10,000 require a PAN number and tax is deducted at source under the Income-tax Act before payout. The winner gets a receipt showing the gross amount, the deduction and the net.",
+      "non_cash": "Some events pay in kit, gear or gift vouchers instead of cash. This is stated on the tournament page."
+    },
+    "age": {
+      "default_minimum_age": 12,
+      "per_game_note": "Each game sets its own minimum age in content/games.json. The tournament page shows whichever is higher — the game's minimum or the organizer's.",
+      "minors": "Players under 18 must supply a parent or guardian's WhatsApp number at registration. We send the guardian a plain-language consent message before the player's first match and the entry is not confirmed until they reply. We do not run advertising or behavioural tracking of any kind, so nothing is targeted at children.",
+      "under_18_prize_note": "Prize money for a player under 18 is paid to the guardian's UPI ID."
+    },
+    "photography": {
+      "summary": "We photograph and sometimes livestream our events, and we use those photos on this site, on Instagram and in event recaps.",
+      "opt_out": "Tell any organizer at the venue that you do not want to be photographed and we will keep you out of posted shots. You can also ask us to take down a specific photo later — message us with the link and we will remove it within 48 hours."
+    },
+    "privacy_summary": {
+      "what_we_collect": "Your name, your WhatsApp number, your age, and whatever the specific game needs — an in-game ID, a rating, a jersey number. Plus the matches you played and the results.",
+      "why": "To run the event you registered for: fixtures, room codes, schedule changes, results and prize payment.",
+      "who_sees_it": "Organizers of the event you entered. Your phone number is never on a public page and never in a public API response.",
+      "how_long": "Contact details are deleted 18 months after your last event. Match results are kept permanently for the leaderboard, but your name is replaced by a player number when your account is deleted.",
+      "your_rights": "You can ask for a copy of your data, ask us to correct it, or ask us to delete your account. Message us and we will act within 30 days.",
+      "no_sale": "We do not sell, rent or share personal data with anyone, including sponsors.",
+      "full_policy_url": "/privacy/",
+      "grievance_officer": { "name": null, "email": null, "note": "India's DPDP Act requires a named contact for data complaints to be published. This must be filled in before launch." }
+    },
+    "legal_note": "Nellore Club runs skill-based tournaments with a fixed participation fee and a published prize table. It is not a betting, gambling or real-money-gaming platform, it holds no player wallets, and it takes no rake or commission from any player-to-player transaction. Card games are switched off in content/games.json for this reason and must not be enabled without written legal advice."
+  },
+
+  "seo": {
+    "site_name": "Nellore Club",
+    "default_title": "Nellore Club — tournaments in Nellore",
+    "title_template": "%s | Nellore Club",
+    "default_description": "Game tournaments in Nellore. Esports, chess and carrom, box cricket, badminton, volleyball and kabaddi. Live brackets, live scores, prize money paid the same day.",
+    "keywords": [
+      "Nellore tournaments",
+      "BGMI tournament Nellore",
+      "Free Fire tournament Nellore",
+      "box cricket Nellore",
+      "chess tournament Nellore",
+      "badminton tournament Nellore",
+      "kabaddi Nellore",
+      "esports Andhra Pradesh",
+      "carrom tournament",
+      "Nellore club"
+    ],
+    "og_image": "/og/default.png",
+    "og_image_alt": "Nellore Club — tournaments in Nellore",
+    "twitter_card": "summary_large_image",
+    "whatsapp_preview_note": "WhatsApp crops link previews to roughly 1.91:1 and shows about 65 characters of the title and 90 of the description. Front-load the game name, the date and the prize pool in that order.",
+    "organization_schema_type": "SportsOrganization"
+  },
+
+  "todo_verify": [
+    {
+      "path": "identity.legal_name",
+      "why": "Needed on receipts, refund records and any TDS deduction. A registered entity is also required to open a current account for the club's UPI ID.",
+      "suggested": "TODO_VERIFY — the registered name, e.g. a proprietorship, LLP or registered society. Leave null and print the owner's own name on receipts until this exists.",
+      "blocking": false
+    },
+    {
+      "path": "contact.email",
+      "why": "There is no mailbox on this domain yet. Nothing may render a mailto: link until one exists.",
+      "suggested": "TODO_VERIFY — set up Cloudflare Email Routing on the nellore.club zone (free, already on the same account) forwarding hello@nellore.club to the owner's Gmail, then set this to \"hello@nellore.club\".",
+      "blocking": true
+    },
+    {
+      "path": "contact.phone",
+      "why": "Every FAQ answer points people at WhatsApp. A wrong number here sends players to a stranger.",
+      "suggested": "TODO_VERIFY — the organizer's number in E.164 form, e.g. \"+919xxxxxxxxx\". Use a number that is actually on WhatsApp and that somebody answers.",
+      "blocking": true
+    },
+    {
+      "path": "contact.whatsapp",
+      "why": "Drives the wa.me deep link that is the primary contact route on mobile.",
+      "suggested": "TODO_VERIFY — same number as contact.phone, digits only with country code, e.g. \"919xxxxxxxxx\".",
+      "blocking": true
+    },
+    {
+      "path": "contact.whatsapp_group_invite",
+      "why": "The announcements group is how players find out about new events. Invite links expire when reset, so this needs a recheck each season.",
+      "suggested": "TODO_VERIFY — the chat.whatsapp.com invite link for the Nellore Club announcements group. Consider a WhatsApp Channel instead: it is broadcast-only, has no member cap, and does not expose members' numbers to each other.",
+      "blocking": false
+    },
+    {
+      "path": "contact.instagram",
+      "why": "Invented handles get squatted or point at somebody else's account.",
+      "suggested": "TODO_VERIFY — register the handle first, then set the full URL, e.g. \"https://instagram.com/nellore.club\".",
+      "blocking": false
+    },
+    {
+      "path": "location.area, location.address_lines, location.pincode, location.map_url",
+      "why": "The club has no fixed address in this file and none was invented. A wrong address sends teams to the wrong part of the city on a match morning.",
+      "suggested": "TODO_VERIFY — either fill in a real registered address with its 5240xx pincode and a Google Maps share link, or leave all four null and let each tournament carry its own venue. The site is written to work either way.",
+      "blocking": false
+    },
+    {
+      "path": "location.geo",
+      "why": "Currently Nellore city-centre coordinates, not a venue.",
+      "suggested": "TODO_VERIFY — replace with the real venue's coordinates if a fixed address is added, or leave as the city pin.",
+      "blocking": false
+    },
+    {
+      "path": "policies.entry_fee.upi_id and upi_display_name",
+      "why": "This is the single most dangerous null in the file. Every paid registration renders a UPI deep link from it. A wrong VPA sends players' money to a stranger with no way to recover it.",
+      "suggested": "TODO_VERIFY — the club's own UPI ID on a current account in the club's name, plus the payee name exactly as the bank shows it so payment apps display a name players recognise. Send yourself ₹1 and confirm the name that appears before going live. Registration for paid events MUST stay disabled while this is null.",
+      "blocking": true
+    },
+    {
+      "path": "policies.privacy_summary.grievance_officer",
+      "why": "India's DPDP Act requires a published contact for data-protection complaints. Shipping without one is a compliance gap on day one.",
+      "suggested": "TODO_VERIFY — name the owner as grievance officer and use the same address as contact.email. It can be one person; it just has to be named and reachable.",
+      "blocking": true
+    },
+    {
+      "path": "identity.founded_year",
+      "why": "Set to 2026 as a placeholder.",
+      "suggested": "TODO_VERIFY — the year the club actually started running events.",
+      "blocking": false
+    },
+    {
+      "path": "story.stats",
+      "why": "All values are null on purpose. Do not invent 'tournaments run' or 'prize money paid' — a claim that can be counted will be counted.",
+      "suggested": "TODO_VERIFY — populate from the database after the first season. The UI hides any stat whose value is null.",
+      "blocking": false
+    },
+    {
+      "path": "content/games.json → rummy-points.compliance",
+      "why": "Andhra Pradesh restricts gaming for stakes and central law restricts online money games. The game ships disabled.",
+      "suggested": "TODO_VERIFY — do not enable rummy, or any card game, without written advice from a lawyer licensed in Andhra Pradesh. If it is ever enabled, entry fee must be ₹0 and prizes must be non-cash.",
+      "blocking": false
+    },
+    {
+      "path": "policies.prizes.tax_note",
+      "why": "The ₹10,000 threshold and the TDS rate on game winnings are stated from general knowledge, not from advice.",
+      "suggested": "TODO_VERIFY — confirm the current threshold, rate and PAN requirement with a CA before the first payout that could cross ₹10,000.",
+      "blocking": false
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Cloudflare / wrangler local state
+.wrangler/
+
+# Secrets. wrangler reads .dev.vars AND .dev.vars.<environment>, so the glob is
+# not optional: .dev.vars.production is the exact file a hurried operator creates.
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+
+# Local D1 databases and `wrangler d1 export` output. A dump contains encrypted
+# phone blobs but also every handle, entrant and audit row (SECURITY.md §9).
+*.sqlite
+*.sqlite3
+*.db
+db/backups/
+
+.DS_Store
+coverage/

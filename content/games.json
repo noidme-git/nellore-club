@@ -1,0 +1,5099 @@
+{
+  "$schema_version": 2,
+  "$doc": "Seed catalog for the nellore.club `games` table. Authoring source of truth. Adding a game = adding one object to `games` + running `npm run seed:games`. No code change, no redeploy. Every value that lands in a CHECK-constrained column of db/schema.sql uses the exact allowed string: category, scoring.model, tournament_defaults.format, tournament_defaults.seeding, participant.type. standings.match_points are integers with a points_divisor (no REALs anywhere). leaderboard.default_weight_pct and entry fees are integers. See docs/CONTENT.md — §2 for the field-by-field spec, §4 for $preset resolution, §6 for the exact projection onto D1.",
+  "$field_types": [
+    "text",
+    "textarea",
+    "integer",
+    "decimal",
+    "tel",
+    "email",
+    "url",
+    "date",
+    "time",
+    "select",
+    "multiselect",
+    "boolean",
+    "color"
+  ],
+  "$scoring_models": [
+    "h2h_simple",
+    "h2h_sets",
+    "h2h_innings",
+    "br_points",
+    "manual"
+  ],
+  "categories": [
+    {
+      "slug": "esport",
+      "name": "Esports & mobile",
+      "short_name": "Esports",
+      "description": "Phone and PC titles. Squads register with in-game IDs, organizers push room codes, and results are entered from the lobby scoreboard.",
+      "icon": {
+        "emoji": "🎮",
+        "sprite": "cat-esports"
+      },
+      "accent": "#6D28D9",
+      "sort_order": 10
+    },
+    {
+      "slug": "board",
+      "name": "Board & mind games",
+      "short_name": "Board games",
+      "description": "Chess, carrom, scrabble and friends. Individual entry, Swiss or round-robin rounds, results in seconds.",
+      "icon": {
+        "emoji": "♟️",
+        "sprite": "cat-mind"
+      },
+      "accent": "#1F2937",
+      "sort_order": 20
+    },
+    {
+      "slug": "outdoor",
+      "name": "Outdoor & physical sports",
+      "short_name": "Sports",
+      "description": "Cricket, badminton, volleyball, kabaddi and throwball on Nellore grounds and courts. Team registration, venue fixtures, live scores from the sideline.",
+      "icon": {
+        "emoji": "🏏",
+        "sprite": "cat-outdoor"
+      },
+      "accent": "#1D4ED8",
+      "sort_order": 30
+    }
+  ],
+  "field_presets": {
+    "team_name": {
+      "key": "team_name",
+      "type": "text",
+      "label": "Team name",
+      "help": "This is what shows on the bracket. Keep it under 20 characters so it fits on a phone.",
+      "placeholder": "Nellore Warriors",
+      "required": true,
+      "visibility": "public",
+      "pii": false,
+      "validation": {
+        "min_length": 2,
+        "max_length": 24,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._'\\-]{1,23}$",
+        "pattern_message": "Letters, numbers, spaces, . _ ' - only."
+      }
+    },
+    "captain_name": {
+      "key": "captain_name",
+      "type": "text",
+      "label": "Captain's name",
+      "required": true,
+      "visibility": "organizer",
+      "pii": true,
+      "profile_key": "core.full_name",
+      "validation": {
+        "min_length": 2,
+        "max_length": 60
+      }
+    },
+    "captain_whatsapp": {
+      "key": "captain_whatsapp",
+      "type": "tel",
+      "label": "Captain's WhatsApp number",
+      "help": "Room codes, reporting time and schedule changes go here. Must be on WhatsApp.",
+      "placeholder": "9876543210",
+      "required": true,
+      "visibility": "organizer",
+      "pii": true,
+      "profile_key": "core.whatsapp",
+      "validation": {
+        "pattern": "^[6-9][0-9]{9}$",
+        "pattern_message": "10-digit Indian mobile number. No +91, no spaces.",
+        "max_length": 10
+      }
+    },
+    "alt_whatsapp": {
+      "key": "alt_whatsapp",
+      "type": "tel",
+      "label": "Backup number",
+      "help": "Someone else in the team we can reach if the captain's phone is off.",
+      "required": false,
+      "visibility": "organizer",
+      "pii": true,
+      "validation": {
+        "pattern": "^[6-9][0-9]{9}$",
+        "pattern_message": "10-digit Indian mobile number.",
+        "max_length": 10
+      }
+    },
+    "player_name": {
+      "key": "player_name",
+      "type": "text",
+      "label": "Full name",
+      "required": true,
+      "visibility": "public",
+      "pii": true,
+      "profile_key": "core.full_name",
+      "validation": {
+        "min_length": 2,
+        "max_length": 60
+      }
+    },
+    "player_whatsapp": {
+      "key": "player_whatsapp",
+      "type": "tel",
+      "label": "WhatsApp number",
+      "help": "We send your reporting time and pairing here.",
+      "placeholder": "9876543210",
+      "required": true,
+      "visibility": "organizer",
+      "pii": true,
+      "profile_key": "core.whatsapp",
+      "validation": {
+        "pattern": "^[6-9][0-9]{9}$",
+        "pattern_message": "10-digit Indian mobile number. No +91, no spaces.",
+        "max_length": 10
+      }
+    },
+    "age": {
+      "key": "age",
+      "type": "integer",
+      "label": "Age",
+      "help": "Used only to check the minimum age for this event.",
+      "required": true,
+      "visibility": "organizer",
+      "pii": true,
+      "profile_key": "core.age",
+      "validation": {
+        "min": 8,
+        "max": 99
+      }
+    },
+    "guardian_whatsapp": {
+      "key": "guardian_whatsapp",
+      "type": "tel",
+      "label": "Parent or guardian's WhatsApp number",
+      "help": "Required if you are under 18. We will send them a consent message before your first match.",
+      "required": false,
+      "visibility": "organizer",
+      "pii": true,
+      "visible_if": {
+        "field": "age",
+        "lt": 18
+      },
+      "validation": {
+        "pattern": "^[6-9][0-9]{9}$",
+        "pattern_message": "10-digit Indian mobile number.",
+        "max_length": 10
+      }
+    },
+    "locality": {
+      "key": "locality",
+      "type": "select",
+      "label": "Which part of Nellore are you from?",
+      "help": "Helps us pick venues close to most players. Optional.",
+      "required": false,
+      "visibility": "organizer",
+      "pii": false,
+      "profile_key": "core.locality",
+      "options": [
+        {
+          "value": "trunk_road",
+          "label": "Trunk Road"
+        },
+        {
+          "value": "dargamitta",
+          "label": "Dargamitta"
+        },
+        {
+          "value": "magunta_layout",
+          "label": "Magunta Layout"
+        },
+        {
+          "value": "ramalingapuram",
+          "label": "Ramalingapuram"
+        },
+        {
+          "value": "balaji_nagar",
+          "label": "Balaji Nagar"
+        },
+        {
+          "value": "vedayapalem",
+          "label": "Vedayapalem"
+        },
+        {
+          "value": "stonehousepet",
+          "label": "Stonehousepet"
+        },
+        {
+          "value": "brahmanandapuram",
+          "label": "Brahmanandapuram"
+        },
+        {
+          "value": "santhapet",
+          "label": "Santhapet"
+        },
+        {
+          "value": "ac_nagar",
+          "label": "AC Nagar"
+        },
+        {
+          "value": "harinathapuram",
+          "label": "Harinathapuram"
+        },
+        {
+          "value": "podalakur_road",
+          "label": "Podalakur Road"
+        },
+        {
+          "value": "mypadu_road",
+          "label": "Mypadu Road"
+        },
+        {
+          "value": "kothur",
+          "label": "Kothur"
+        },
+        {
+          "value": "other_nellore",
+          "label": "Somewhere else in Nellore"
+        },
+        {
+          "value": "outside",
+          "label": "Outside Nellore"
+        }
+      ]
+    },
+    "preferred_slot": {
+      "key": "preferred_slot",
+      "type": "select",
+      "label": "Preferred slot",
+      "help": "We try to honour this, but the final schedule is whatever the bracket says.",
+      "required": false,
+      "visibility": "organizer",
+      "pii": false,
+      "options": [
+        {
+          "value": "morning",
+          "label": "Morning (before 12 PM)"
+        },
+        {
+          "value": "afternoon",
+          "label": "Afternoon (12 PM - 5 PM)"
+        },
+        {
+          "value": "evening",
+          "label": "Evening (5 PM - 9 PM)"
+        },
+        {
+          "value": "night",
+          "label": "Night (after 9 PM)"
+        },
+        {
+          "value": "any",
+          "label": "Any slot works"
+        }
+      ]
+    },
+    "jersey_colour": {
+      "key": "jersey_colour",
+      "type": "color",
+      "label": "Jersey colour",
+      "help": "So two teams don't turn up in the same shade. First to register keeps the colour.",
+      "required": true,
+      "visibility": "public",
+      "pii": false,
+      "default": "#1D4ED8"
+    },
+    "jersey_number": {
+      "key": "jersey_number",
+      "type": "integer",
+      "label": "Jersey number",
+      "required": false,
+      "visibility": "public",
+      "pii": false,
+      "validation": {
+        "min": 0,
+        "max": 99
+      }
+    },
+    "device_model": {
+      "key": "device_model",
+      "type": "text",
+      "label": "Phone model",
+      "help": "For the device check at LAN events. Example: Redmi Note 13, iPhone 13.",
+      "placeholder": "Redmi Note 13",
+      "required": false,
+      "visibility": "organizer",
+      "pii": false,
+      "profile_key": "core.device_model",
+      "validation": {
+        "max_length": 40
+      }
+    },
+    "discord_id": {
+      "key": "discord_id",
+      "type": "text",
+      "label": "Discord username",
+      "help": "Optional. We use the club WhatsApp group as the primary channel.",
+      "required": false,
+      "visibility": "organizer",
+      "pii": false,
+      "profile_key": "core.discord",
+      "validation": {
+        "max_length": 40,
+        "pattern": "^[a-z0-9._]{2,32}$",
+        "pattern_message": "Lowercase Discord username, e.g. rahul.n"
+      }
+    },
+    "agree_rules": {
+      "key": "agree_rules",
+      "type": "boolean",
+      "label": "I have read the rules and the fair-play code, and I accept the organizer's decision as final.",
+      "required": true,
+      "visibility": "organizer",
+      "pii": false,
+      "validation": {
+        "must_be": true
+      }
+    }
+  },
+  "games": [
+    {
+      "slug": "bgmi",
+      "name": "BGMI",
+      "full_name": "Battlegrounds Mobile India",
+      "short_name": "BGMI",
+      "category": "esport",
+      "subcategory": "battle_royale",
+      "status": "active",
+      "sort_order": 10,
+      "tagline": "Four players, one drop, last squad standing.",
+      "description": "Squad battle royale on Android and iOS. Squads of four play a series of matches in the same custom lobby; points come from where you finish plus every kill you take. Erangel and Miramar by default.",
+      "search_terms": [
+        "bgmi",
+        "pubg",
+        "pubg mobile",
+        "battlegrounds",
+        "battle royale",
+        "br"
+      ],
+      "icon": {
+        "emoji": "🪖",
+        "sprite": "game-bgmi"
+      },
+      "accent": "#B45309",
+      "age_min": 16,
+      "equipment": [
+        "Your own phone, charged",
+        "Power bank",
+        "Earphones",
+        "Mobile data as backup — venue wifi is not guaranteed"
+      ],
+      "rules_summary": [
+        "Emulators, tablets, triggers, gyro-assist hardware and any third-party app are banned. Phone only.",
+        "Teaming with another squad, or dropping to farm kills for a friend, is an instant disqualification for both squads.",
+        "The squad that registered is the squad that plays. Only the listed substitute may replace a listed player, and only between matches.",
+        "Room code and password go to the captain's WhatsApp 10 minutes before the match. Anyone who leaks the code is disqualified.",
+        "The lobby scoreboard screenshot from the organizer's spectator account is the official result. Player screenshots are evidence, not scores."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Skill-based esports with a fixed participation fee. Recognised as e-sports rather than an online money game."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 4,
+        "team_size_max": 4,
+        "substitutes_max": 1,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "alt_whatsapp"
+        },
+        {
+          "$preset": "preferred_slot"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "key": "ign",
+          "type": "text",
+          "label": "In-game name (IGN)",
+          "help": "Exactly as it appears in BGMI, including clan tag if you use one.",
+          "placeholder": "NLRxRahul",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "bgmi.ign",
+          "validation": {
+            "min_length": 2,
+            "max_length": 20
+          }
+        },
+        {
+          "key": "bgmi_player_id",
+          "type": "text",
+          "label": "BGMI player ID",
+          "help": "The number under your avatar in the profile screen. Tap it to copy.",
+          "placeholder": "5123456789",
+          "required": true,
+          "visibility": "organizer",
+          "pii": false,
+          "profile_key": "bgmi.player_id",
+          "validation": {
+            "pattern": "^[0-9]{8,12}$",
+            "pattern_message": "8 to 12 digits, numbers only.",
+            "max_length": 12
+          }
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false,
+          "help": "Only the captain's number is compulsory. Add yours if you want the room code directly."
+        },
+        {
+          "$preset": "device_model"
+        }
+      ],
+      "tournament_defaults": {
+        "format": "points_lobby",
+        "seeding": "random",
+        "third_place_match": false,
+        "min_participants": 8,
+        "max_participants": 25,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 200,
+        "typical_duration_minutes": 150,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 30,
+        "buffer_minutes": 10,
+        "venue_kind": "online",
+        "needs_lobby_code": true,
+        "lobby_code_label": "Room ID",
+        "lobby_password_label": "Room password"
+      },
+      "scoring": {
+        "model": "br_points",
+        "side_labels": [],
+        "side_assignment": "none",
+        "params": {
+          "teams_per_lobby": 25,
+          "matches_per_round": 4,
+          "kill_points": 1,
+          "kills_cap_per_match": null,
+          "placement_points": [
+            10,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "map_rotation": [
+            "Erangel",
+            "Miramar",
+            "Sanhok",
+            "Erangel"
+          ]
+        },
+        "match_fields": [
+          {
+            "key": "map",
+            "type": "select",
+            "label": "Map",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "erangel",
+                "label": "Erangel"
+              },
+              {
+                "value": "miramar",
+                "label": "Miramar"
+              },
+              {
+                "value": "sanhok",
+                "label": "Sanhok"
+              },
+              {
+                "value": "vikendi",
+                "label": "Vikendi"
+              },
+              {
+                "value": "livik",
+                "label": "Livik"
+              }
+            ]
+          },
+          {
+            "key": "placement",
+            "type": "integer",
+            "label": "Finish position",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 1,
+              "max": 25
+            }
+          },
+          {
+            "key": "kills",
+            "type": "integer",
+            "label": "Squad kills",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 99
+            }
+          },
+          {
+            "key": "scoreboard_note",
+            "type": "text",
+            "label": "Note",
+            "help": "Anything unusual — a disconnect, a penalty applied.",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 120
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 0,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 0,
+          "walkover_win": 0,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "kills",
+          "best_placement",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 100
+      },
+      "primary_ingame_id_field": "bgmi_player_id",
+      "primary_ingame_id_label": "BGMI player ID",
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "free-fire",
+      "name": "Free Fire",
+      "full_name": "Garena Free Fire MAX",
+      "short_name": "Free Fire",
+      "category": "esport",
+      "subcategory": "battle_royale",
+      "status": "active",
+      "sort_order": 20,
+      "tagline": "Twelve squads, ten minutes, one Booyah.",
+      "description": "Fast battle royale that runs well on budget Android phones — the reason it is the most-played title in Nellore. Squads of four, twelve squads per lobby, four matches per stage.",
+      "search_terms": [
+        "free fire",
+        "freefire",
+        "ff",
+        "garena",
+        "booyah",
+        "ff max"
+      ],
+      "icon": {
+        "emoji": "🔥",
+        "sprite": "game-free-fire"
+      },
+      "accent": "#B91C1C",
+      "age_min": 14,
+      "equipment": [
+        "Your own phone, charged",
+        "Power bank",
+        "Earphones"
+      ],
+      "rules_summary": [
+        "Free Fire MAX or standard Free Fire, phone only. No emulators, no tablets.",
+        "Character skills are allowed as-is. No mods, no auto-headshot apps, no modified APKs.",
+        "Teaming between squads is a disqualification for every squad involved.",
+        "Room code goes to the captain's WhatsApp. Squads not in the lobby at the countdown play the next match, not that one.",
+        "The organizer's spectator scoreboard is the official result."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Skill-based esports with a fixed participation fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 4,
+        "team_size_max": 4,
+        "substitutes_max": 1,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "alt_whatsapp"
+        },
+        {
+          "$preset": "preferred_slot"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "key": "ign",
+          "type": "text",
+          "label": "In-game name (IGN)",
+          "placeholder": "NLR彡Rahul",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "freefire.ign",
+          "validation": {
+            "min_length": 2,
+            "max_length": 20
+          }
+        },
+        {
+          "key": "free_fire_uid",
+          "type": "text",
+          "label": "Free Fire UID",
+          "help": "The number on your profile card, under your name.",
+          "placeholder": "123456789",
+          "required": true,
+          "visibility": "organizer",
+          "pii": false,
+          "profile_key": "freefire.uid",
+          "validation": {
+            "pattern": "^[0-9]{6,12}$",
+            "pattern_message": "6 to 12 digits, numbers only.",
+            "max_length": 12
+          }
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false
+        },
+        {
+          "$preset": "device_model"
+        }
+      ],
+      "tournament_defaults": {
+        "format": "points_lobby",
+        "seeding": "random",
+        "third_place_match": false,
+        "min_participants": 6,
+        "max_participants": 12,
+        "check_in_opens_minutes_before": 45,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 100,
+        "typical_duration_minutes": 120,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 15,
+        "buffer_minutes": 8,
+        "venue_kind": "online",
+        "needs_lobby_code": true,
+        "lobby_code_label": "Room ID",
+        "lobby_password_label": "Room password"
+      },
+      "scoring": {
+        "model": "br_points",
+        "side_labels": [],
+        "side_assignment": "none",
+        "params": {
+          "teams_per_lobby": 12,
+          "matches_per_round": 4,
+          "kill_points": 1,
+          "kills_cap_per_match": null,
+          "placement_points": [
+            12,
+            9,
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            0,
+            0
+          ],
+          "map_rotation": [
+            "Bermuda",
+            "Purgatory",
+            "Kalahari",
+            "Bermuda"
+          ]
+        },
+        "match_fields": [
+          {
+            "key": "map",
+            "type": "select",
+            "label": "Map",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "bermuda",
+                "label": "Bermuda"
+              },
+              {
+                "value": "purgatory",
+                "label": "Purgatory"
+              },
+              {
+                "value": "kalahari",
+                "label": "Kalahari"
+              },
+              {
+                "value": "alpine",
+                "label": "Alpine"
+              },
+              {
+                "value": "nexterra",
+                "label": "Nexterra"
+              }
+            ]
+          },
+          {
+            "key": "placement",
+            "type": "integer",
+            "label": "Finish position",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 1,
+              "max": 12
+            }
+          },
+          {
+            "key": "kills",
+            "type": "integer",
+            "label": "Squad kills",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 60
+            }
+          },
+          {
+            "key": "scoreboard_note",
+            "type": "text",
+            "label": "Note",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 120
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 0,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 0,
+          "walkover_win": 0,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "kills",
+          "best_placement",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 100
+      },
+      "primary_ingame_id_field": "free_fire_uid",
+      "primary_ingame_id_label": "Free Fire UID",
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "valorant",
+      "name": "Valorant",
+      "full_name": "VALORANT",
+      "short_name": "VAL",
+      "category": "esport",
+      "subcategory": "fps",
+      "status": "active",
+      "sort_order": 30,
+      "tagline": "Five on five. First to thirteen.",
+      "description": "Tactical PC shooter played five a side. Group games are a single map, playoffs are best of three with a map veto. Needs a stable connection — play from a cafe with a wired line if your home link drops.",
+      "search_terms": [
+        "valorant",
+        "val",
+        "riot",
+        "fps",
+        "tactical shooter"
+      ],
+      "icon": {
+        "emoji": "🎯",
+        "sprite": "game-valorant"
+      },
+      "accent": "#BE123C",
+      "age_min": 16,
+      "equipment": [
+        "PC or laptop that runs the game at a stable frame rate",
+        "Headset with a mic",
+        "Wired internet if you have it"
+      ],
+      "rules_summary": [
+        "Five registered players plus up to one substitute. Substitutes may be swapped between maps, not mid-map.",
+        "Any cheat, macro, or third-party overlay that touches the game client is a permanent club ban.",
+        "The higher seed picks side. Map veto for playoffs is run in the club WhatsApp group 30 minutes before the match.",
+        "A disconnect inside the first two rounds means a restart. After that, play on.",
+        "Post the end-of-game scoreboard screenshot in the match thread within 10 minutes."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Skill-based esports with a fixed participation fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 5,
+        "team_size_max": 5,
+        "substitutes_max": 1,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "discord_id",
+          "label": "Team Discord (captain)"
+        },
+        {
+          "$preset": "preferred_slot"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "key": "riot_id",
+          "type": "text",
+          "label": "Riot ID",
+          "help": "Name and tagline together, exactly as in-game.",
+          "placeholder": "Rahul#NLR",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "valorant.riot_id",
+          "validation": {
+            "pattern": "^[^#]{3,16}#[A-Za-z0-9]{3,5}$",
+            "pattern_message": "Format: Name#TAG, e.g. Rahul#NLR",
+            "max_length": 22
+          }
+        },
+        {
+          "key": "peak_rank",
+          "type": "select",
+          "label": "Peak rank",
+          "help": "Used only for seeding. Be honest — smurfing gets the whole team removed.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "valorant.peak_rank",
+          "options": [
+            {
+              "value": "iron",
+              "label": "Iron"
+            },
+            {
+              "value": "bronze",
+              "label": "Bronze"
+            },
+            {
+              "value": "silver",
+              "label": "Silver"
+            },
+            {
+              "value": "gold",
+              "label": "Gold"
+            },
+            {
+              "value": "platinum",
+              "label": "Platinum"
+            },
+            {
+              "value": "diamond",
+              "label": "Diamond"
+            },
+            {
+              "value": "ascendant",
+              "label": "Ascendant"
+            },
+            {
+              "value": "immortal",
+              "label": "Immortal"
+            },
+            {
+              "value": "radiant",
+              "label": "Radiant"
+            }
+          ]
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false
+        }
+      ],
+      "tournament_defaults": {
+        "format": "round_robin",
+        "seeding": "manual",
+        "third_place_match": true,
+        "min_participants": 4,
+        "max_participants": 16,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 500,
+        "typical_duration_minutes": 360,
+        "multi_stage": true
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 45,
+        "buffer_minutes": 15,
+        "venue_kind": "online",
+        "needs_lobby_code": true,
+        "lobby_code_label": "Custom game code",
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Attackers",
+          "Defenders"
+        ],
+        "side_assignment": "higher_seed_picks",
+        "params": {
+          "unit": "rounds",
+          "win_by": 1,
+          "overtime": "win_by_2",
+          "draw_allowed": false,
+          "higher_wins": true,
+          "record_margin": true,
+          "set_label": "Map",
+          "best_of": 1,
+          "points_per_set": 13,
+          "cap": null,
+          "deciding_set_points": 13,
+          "record_set_scores": false
+        },
+        "match_fields": [
+          {
+            "key": "map",
+            "type": "select",
+            "label": "Map",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "ascent",
+                "label": "Ascent"
+              },
+              {
+                "value": "bind",
+                "label": "Bind"
+              },
+              {
+                "value": "haven",
+                "label": "Haven"
+              },
+              {
+                "value": "split",
+                "label": "Split"
+              },
+              {
+                "value": "lotus",
+                "label": "Lotus"
+              },
+              {
+                "value": "sunset",
+                "label": "Sunset"
+              },
+              {
+                "value": "icebox",
+                "label": "Icebox"
+              }
+            ]
+          },
+          {
+            "key": "score_a",
+            "type": "integer",
+            "label": "Rounds — side A",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 30
+            }
+          },
+          {
+            "key": "score_b",
+            "type": "integer",
+            "label": "Rounds — side B",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 30
+            }
+          },
+          {
+            "key": "went_to_overtime",
+            "type": "boolean",
+            "label": "Went to overtime",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "default": false
+          },
+          {
+            "key": "scoreboard_url",
+            "type": "url",
+            "label": "Scoreboard screenshot link",
+            "help": "Optional. Paste a link if you uploaded it somewhere.",
+            "required": false,
+            "visibility": "organizer",
+            "pii": false
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 3,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 3,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "head_to_head",
+          "score_diff",
+          "score_for",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 120
+      },
+      "primary_ingame_id_field": "riot_id",
+      "primary_ingame_id_label": "Riot ID",
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "cs2",
+      "name": "CS2",
+      "full_name": "Counter-Strike 2",
+      "short_name": "CS2",
+      "category": "esport",
+      "subcategory": "fps",
+      "status": "active",
+      "sort_order": 40,
+      "tagline": "MR12. First to thirteen. No excuses.",
+      "description": "Five-a-side Counter-Strike on the MR12 ruleset. Group stage on a single map, playoffs best of three. Bring your own peripherals to LAN nights.",
+      "search_terms": [
+        "cs2",
+        "counter strike",
+        "counterstrike",
+        "csgo",
+        "cs",
+        "valve"
+      ],
+      "icon": {
+        "emoji": "💣",
+        "sprite": "game-cs2"
+      },
+      "accent": "#A16207",
+      "age_min": 16,
+      "equipment": [
+        "PC or laptop",
+        "Mouse and headset (peripherals are yours to bring at LAN)",
+        "Steam account in good standing"
+      ],
+      "rules_summary": [
+        "MR12: first to 13 rounds. Overtime is MR3 with a $10,000 start.",
+        "Any VAC ban on the account within the last two years disqualifies the player.",
+        "Knife round decides sides.",
+        "Coaching is allowed only during freeze time and tactical timeouts.",
+        "Server and demo are the record. Post the demo link in the match thread if asked."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Skill-based esports with a fixed participation fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 5,
+        "team_size_max": 5,
+        "substitutes_max": 1,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "discord_id",
+          "label": "Team Discord (captain)"
+        },
+        {
+          "$preset": "preferred_slot"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "key": "steam_profile",
+          "type": "url",
+          "label": "Steam profile URL",
+          "help": "Open Steam, tap your name, copy the link. We use it to check bans.",
+          "placeholder": "https://steamcommunity.com/id/yourname",
+          "required": true,
+          "visibility": "organizer",
+          "pii": false,
+          "profile_key": "cs2.steam_profile",
+          "validation": {
+            "pattern": "^https://steamcommunity\\.com/(id|profiles)/[A-Za-z0-9_\\-]+/?$",
+            "pattern_message": "A steamcommunity.com profile link."
+          }
+        },
+        {
+          "key": "in_game_nick",
+          "type": "text",
+          "label": "In-game nickname",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "cs2.nick",
+          "validation": {
+            "min_length": 2,
+            "max_length": 20
+          }
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false
+        }
+      ],
+      "tournament_defaults": {
+        "format": "single_elim",
+        "seeding": "manual",
+        "third_place_match": true,
+        "min_participants": 4,
+        "max_participants": 16,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 500,
+        "typical_duration_minutes": 360,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 50,
+        "buffer_minutes": 15,
+        "venue_kind": "hybrid",
+        "needs_lobby_code": true,
+        "lobby_code_label": "Server connect string",
+        "lobby_password_label": "Server password"
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "CT",
+          "T"
+        ],
+        "side_assignment": "knife_round",
+        "params": {
+          "unit": "rounds",
+          "win_by": 1,
+          "overtime": "mr3",
+          "draw_allowed": false,
+          "higher_wins": true,
+          "record_margin": true,
+          "set_label": "Map",
+          "best_of": 1,
+          "points_per_set": 13,
+          "cap": null,
+          "deciding_set_points": 13,
+          "record_set_scores": false
+        },
+        "match_fields": [
+          {
+            "key": "map",
+            "type": "select",
+            "label": "Map",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "mirage",
+                "label": "Mirage"
+              },
+              {
+                "value": "inferno",
+                "label": "Inferno"
+              },
+              {
+                "value": "nuke",
+                "label": "Nuke"
+              },
+              {
+                "value": "ancient",
+                "label": "Ancient"
+              },
+              {
+                "value": "anubis",
+                "label": "Anubis"
+              },
+              {
+                "value": "dust2",
+                "label": "Dust II"
+              },
+              {
+                "value": "vertigo",
+                "label": "Vertigo"
+              }
+            ]
+          },
+          {
+            "key": "score_a",
+            "type": "integer",
+            "label": "Rounds — side A",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 40
+            }
+          },
+          {
+            "key": "score_b",
+            "type": "integer",
+            "label": "Rounds — side B",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 40
+            }
+          },
+          {
+            "key": "demo_url",
+            "type": "url",
+            "label": "Demo link",
+            "required": false,
+            "visibility": "organizer",
+            "pii": false
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 3,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 3,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "head_to_head",
+          "score_diff",
+          "score_for",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 120
+      },
+      "primary_ingame_id_field": "steam_profile",
+      "primary_ingame_id_label": "Steam profile URL",
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "ea-fc",
+      "name": "EA FC",
+      "full_name": "EA SPORTS FC — 1v1",
+      "short_name": "EA FC",
+      "category": "esport",
+      "subcategory": "sports_sim",
+      "status": "active",
+      "sort_order": 50,
+      "tagline": "Six-minute halves. Bring your best eleven.",
+      "description": "One-on-one football on console or PC. Six-minute halves, no custom tactics sharing, and penalties settle knockout ties. Console is provided at LAN nights; bring your own controller if you are particular.",
+      "search_terms": [
+        "ea fc",
+        "fifa",
+        "fc 26",
+        "fc26",
+        "eafc",
+        "football game",
+        "ea sports"
+      ],
+      "icon": {
+        "emoji": "⚽",
+        "sprite": "game-ea-fc"
+      },
+      "accent": "#15803D",
+      "age_min": 12,
+      "equipment": [
+        "Your own controller if you prefer one",
+        "The club provides consoles and screens at LAN nights"
+      ],
+      "rules_summary": [
+        "Six-minute halves, Legendary difficulty off, no injuries, no offside changes. Default weather.",
+        "Any club team is allowed. Icons and Ultimate Team squads are not — this is Kick Off mode.",
+        "A pause after the ball is in play, other than at a stoppage, gives the opponent the choice to restart or continue.",
+        "Group games can end in a draw. Knockout ties go to extra time, then penalties.",
+        "A controller disconnect is the player's problem. Bring a cable."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Skill-based esports with a fixed participation fee."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "key": "platform",
+          "type": "select",
+          "label": "Platform you play on",
+          "help": "We group players by platform where we can, but LAN nights are all on the club's PS5s.",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "eafc.platform",
+          "options": [
+            {
+              "value": "ps5",
+              "label": "PlayStation 5"
+            },
+            {
+              "value": "ps4",
+              "label": "PlayStation 4"
+            },
+            {
+              "value": "xbox",
+              "label": "Xbox Series X/S"
+            },
+            {
+              "value": "pc",
+              "label": "PC"
+            },
+            {
+              "value": "any",
+              "label": "Whatever the club provides"
+            }
+          ]
+        },
+        {
+          "key": "ea_id",
+          "type": "text",
+          "label": "EA ID / gamertag",
+          "help": "Only needed for online rounds. Leave blank if you only play at the venue.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "eafc.ea_id",
+          "validation": {
+            "min_length": 2,
+            "max_length": 24
+          }
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "round_robin",
+        "seeding": "rating",
+        "third_place_match": true,
+        "min_participants": 8,
+        "max_participants": 32,
+        "check_in_opens_minutes_before": 45,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 150,
+        "typical_duration_minutes": 240,
+        "multi_stage": true
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 20,
+        "buffer_minutes": 5,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_simple",
+        "side_labels": [
+          "Home",
+          "Away"
+        ],
+        "side_assignment": "coin_toss",
+        "params": {
+          "unit": "goals",
+          "target": null,
+          "win_by": 1,
+          "overtime": "extra_time_then_penalties",
+          "draw_allowed": true,
+          "higher_wins": true,
+          "record_margin": true
+        },
+        "match_fields": [
+          {
+            "key": "score_a",
+            "type": "integer",
+            "label": "Goals — home",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 30
+            }
+          },
+          {
+            "key": "score_b",
+            "type": "integer",
+            "label": "Goals — away",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 30
+            }
+          },
+          {
+            "key": "pens_a",
+            "type": "integer",
+            "label": "Penalties — home",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 20
+            }
+          },
+          {
+            "key": "pens_b",
+            "type": "integer",
+            "label": "Penalties — away",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 20
+            }
+          },
+          {
+            "key": "club_a",
+            "type": "text",
+            "label": "Club used — home",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 30
+            }
+          },
+          {
+            "key": "club_b",
+            "type": "text",
+            "label": "Club used — away",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 30
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 3,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 3,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "head_to_head",
+          "score_diff",
+          "score_for",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 80
+      },
+      "primary_ingame_id_field": "ea_id",
+      "primary_ingame_id_label": "EA ID / gamertag",
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "cod-mobile",
+      "name": "COD Mobile",
+      "full_name": "Call of Duty: Mobile — Search & Destroy",
+      "short_name": "CODM",
+      "category": "esport",
+      "subcategory": "fps",
+      "status": "active",
+      "sort_order": 60,
+      "tagline": "Five a side. First to six rounds.",
+      "description": "Search & Destroy, five a side, best of eleven rounds with a side switch at the halfway mark. Phone only, private lobby, organizer spectating.",
+      "search_terms": [
+        "cod mobile",
+        "codm",
+        "call of duty",
+        "call of duty mobile",
+        "snd"
+      ],
+      "icon": {
+        "emoji": "🎖️",
+        "sprite": "game-cod-mobile"
+      },
+      "accent": "#3F6212",
+      "age_min": 16,
+      "equipment": [
+        "Your own phone, charged",
+        "Power bank",
+        "Earphones"
+      ],
+      "rules_summary": [
+        "Search & Destroy, first to 6 rounds, sides switch after round 5.",
+        "Banned: Trip Mine, Sticky Grenade spam beyond one per round, Scorestreaks, and any Operator Skill.",
+        "Phone only. Emulators, controllers and tablets are not allowed.",
+        "Any player who leaves mid-round forfeits that round for the team unless the organizer sees a lobby-wide issue.",
+        "The organizer's spectator view is the official record."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Skill-based esports with a fixed participation fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 5,
+        "team_size_max": 5,
+        "substitutes_max": 1,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "alt_whatsapp"
+        },
+        {
+          "$preset": "preferred_slot"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "key": "ign",
+          "type": "text",
+          "label": "In-game name",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "codm.ign",
+          "validation": {
+            "min_length": 2,
+            "max_length": 20
+          }
+        },
+        {
+          "key": "codm_uid",
+          "type": "text",
+          "label": "COD Mobile UID",
+          "help": "Profile screen, under your name. Numbers only.",
+          "required": true,
+          "visibility": "organizer",
+          "pii": false,
+          "profile_key": "codm.uid",
+          "validation": {
+            "pattern": "^[0-9]{8,20}$",
+            "pattern_message": "8 to 20 digits.",
+            "max_length": 20
+          }
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false
+        },
+        {
+          "$preset": "device_model"
+        }
+      ],
+      "tournament_defaults": {
+        "format": "single_elim",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 4,
+        "max_participants": 16,
+        "check_in_opens_minutes_before": 45,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 250,
+        "typical_duration_minutes": 210,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 25,
+        "buffer_minutes": 10,
+        "venue_kind": "online",
+        "needs_lobby_code": true,
+        "lobby_code_label": "Private match code",
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_simple",
+        "side_labels": [
+          "Attack",
+          "Defence"
+        ],
+        "side_assignment": "random",
+        "params": {
+          "unit": "rounds",
+          "target": 6,
+          "win_by": 1,
+          "overtime": "sudden_death_round",
+          "draw_allowed": false,
+          "higher_wins": true,
+          "record_margin": true
+        },
+        "match_fields": [
+          {
+            "key": "map",
+            "type": "select",
+            "label": "Map",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "crash",
+                "label": "Crash"
+              },
+              {
+                "value": "crossfire",
+                "label": "Crossfire"
+              },
+              {
+                "value": "summit",
+                "label": "Summit"
+              },
+              {
+                "value": "raid",
+                "label": "Raid"
+              },
+              {
+                "value": "firing_range",
+                "label": "Firing Range"
+              },
+              {
+                "value": "standoff",
+                "label": "Standoff"
+              }
+            ]
+          },
+          {
+            "key": "score_a",
+            "type": "integer",
+            "label": "Rounds — side A",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 12
+            }
+          },
+          {
+            "key": "score_b",
+            "type": "integer",
+            "label": "Rounds — side B",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 12
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 3,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 3,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "head_to_head",
+          "score_diff",
+          "score_for",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 100
+      },
+      "primary_ingame_id_field": "codm_uid",
+      "primary_ingame_id_label": "COD Mobile UID",
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "clash-royale",
+      "name": "Clash Royale",
+      "full_name": "Clash Royale — 1v1",
+      "short_name": "CR",
+      "category": "esport",
+      "subcategory": "strategy",
+      "status": "active",
+      "sort_order": 70,
+      "tagline": "Best of three. Three minutes each.",
+      "description": "One-on-one deck duels. Best of three games, and in the club format you must change at least three cards between games — no spamming one deck all day.",
+      "search_terms": [
+        "clash royale",
+        "cr",
+        "supercell",
+        "clash",
+        "royale"
+      ],
+      "icon": {
+        "emoji": "👑",
+        "sprite": "game-clash-royale"
+      },
+      "accent": "#6D28D9",
+      "age_min": 10,
+      "equipment": [
+        "Your own phone, charged",
+        "Power bank"
+      ],
+      "rules_summary": [
+        "Best of three games. Whoever wins two games wins the match.",
+        "At least three cards must change between games. The organizer checks the replay if challenged.",
+        "Both players must be King Level 11 or above, or in the same tournament-standard bracket the organizer announces.",
+        "Friendly battle in the club clan, or a private tournament — the organizer will say which before the round.",
+        "A draw counts as no result and is replayed once. A second draw goes to the player with more crowns across the match."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Skill-based esports with a fixed participation fee."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "key": "player_tag",
+          "type": "text",
+          "label": "Player tag",
+          "help": "Profile screen, under your name. Starts with #.",
+          "placeholder": "#8QLR2VYU",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "clashroyale.player_tag",
+          "validation": {
+            "pattern": "^#?[0289PYLQGRJCUV]{3,12}$",
+            "pattern_message": "A Supercell tag, e.g. #8QLR2VYU",
+            "max_length": 13
+          }
+        },
+        {
+          "key": "king_level",
+          "type": "integer",
+          "label": "King level",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "clashroyale.king_level",
+          "validation": {
+            "min": 1,
+            "max": 100
+          }
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "single_elim",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 8,
+        "max_participants": 64,
+        "check_in_opens_minutes_before": 30,
+        "check_in_closes_minutes_before": 5,
+        "entry_fee_inr_default": 50,
+        "typical_duration_minutes": 120,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 3,
+        "duration_minutes": 15,
+        "buffer_minutes": 5,
+        "venue_kind": "hybrid",
+        "needs_lobby_code": true,
+        "lobby_code_label": "Tournament join tag",
+        "lobby_password_label": "Tournament password"
+      },
+      "scoring": {
+        "model": "h2h_simple",
+        "side_labels": [
+          "Player A",
+          "Player B"
+        ],
+        "side_assignment": "none",
+        "params": {
+          "unit": "games",
+          "target": 2,
+          "win_by": 1,
+          "overtime": "crown_count",
+          "draw_allowed": false,
+          "higher_wins": true,
+          "record_margin": false
+        },
+        "match_fields": [
+          {
+            "key": "score_a",
+            "type": "integer",
+            "label": "Games won — A",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 3
+            }
+          },
+          {
+            "key": "score_b",
+            "type": "integer",
+            "label": "Games won — B",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 3
+            }
+          },
+          {
+            "key": "crowns_a",
+            "type": "integer",
+            "label": "Total crowns — A",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 9
+            }
+          },
+          {
+            "key": "crowns_b",
+            "type": "integer",
+            "label": "Total crowns — B",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 9
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 3,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 3,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "head_to_head",
+          "score_diff",
+          "score_for",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 60
+      },
+      "primary_ingame_id_field": "player_tag",
+      "primary_ingame_id_label": "Player tag",
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "chess-classical",
+      "name": "Chess",
+      "full_name": "Chess — Rapid (30 + 10)",
+      "short_name": "Chess",
+      "category": "board",
+      "subcategory": "mind",
+      "status": "active",
+      "sort_order": 110,
+      "tagline": "Thirty minutes, ten-second increment, seven rounds.",
+      "description": "Over-the-board rapid chess run as a Swiss. Seven rounds in a day, pairings on your phone, results in one tap. Bring a pen — we still keep score sheets as backup.",
+      "search_terms": [
+        "chess",
+        "rapid",
+        "swiss",
+        "otb",
+        "chaturanga",
+        "fide"
+      ],
+      "icon": {
+        "emoji": "♟️",
+        "sprite": "game-chess"
+      },
+      "accent": "#1F2937",
+      "age_min": 6,
+      "equipment": [
+        "The club provides boards and clocks",
+        "A pen for the score sheet"
+      ],
+      "rules_summary": [
+        "FIDE Laws of Chess apply, rapid rules. 30 minutes plus a 10-second increment from move one.",
+        "Phones must be switched off and in a bag. A phone that makes a sound loses the game.",
+        "Touch-move applies. Adjust a piece only after saying 'j'adoube'.",
+        "An illegal move gives the opponent two extra minutes. A second illegal move loses the game.",
+        "Both players sign the result before leaving the board. Once the organizer enters it, only the arbiter can change it."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Game of skill. Fixed entry fee, published prize table."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "key": "rating",
+          "type": "integer",
+          "label": "Your rating",
+          "help": "Any rating you have — FIDE, AICF, Lichess or Chess.com. We use it only for round-one pairings. Leave blank if you are unrated.",
+          "placeholder": "1450",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "chess.rating",
+          "validation": {
+            "min": 400,
+            "max": 3200
+          }
+        },
+        {
+          "key": "rating_source",
+          "type": "select",
+          "label": "Where is that rating from?",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "chess.rating_source",
+          "visible_if": {
+            "field": "rating",
+            "not_empty": true
+          },
+          "options": [
+            {
+              "value": "fide",
+              "label": "FIDE"
+            },
+            {
+              "value": "aicf",
+              "label": "AICF / state rating"
+            },
+            {
+              "value": "lichess",
+              "label": "Lichess"
+            },
+            {
+              "value": "chesscom",
+              "label": "Chess.com"
+            },
+            {
+              "value": "club",
+              "label": "Club estimate"
+            }
+          ]
+        },
+        {
+          "key": "fide_id",
+          "type": "text",
+          "label": "FIDE ID",
+          "help": "Optional. Only if you have one.",
+          "placeholder": "25123456",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "chess.fide_id",
+          "validation": {
+            "pattern": "^[0-9]{6,10}$",
+            "pattern_message": "6 to 10 digits.",
+            "max_length": 10
+          }
+        },
+        {
+          "key": "online_handle",
+          "type": "text",
+          "label": "Lichess or Chess.com username",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "chess.online_handle",
+          "validation": {
+            "max_length": 30
+          }
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "swiss",
+        "seeding": "rating",
+        "third_place_match": false,
+        "min_participants": 8,
+        "max_participants": 120,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 200,
+        "typical_duration_minutes": 480,
+        "rounds": 7,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 70,
+        "buffer_minutes": 15,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null,
+        "time_control": "30+10"
+      },
+      "scoring": {
+        "model": "h2h_simple",
+        "side_labels": [
+          "White",
+          "Black"
+        ],
+        "side_assignment": "alternate",
+        "params": {
+          "win_points": 1.0,
+          "draw_points": 0.5,
+          "loss_points": 0.0,
+          "bye_points": 1.0,
+          "half_bye_points": 0.5,
+          "result_codes": [
+            {
+              "value": "1-0",
+              "label": "White wins"
+            },
+            {
+              "value": "0-1",
+              "label": "Black wins"
+            },
+            {
+              "value": "0.5-0.5",
+              "label": "Draw"
+            },
+            {
+              "value": "1-0F",
+              "label": "White wins, Black forfeited"
+            },
+            {
+              "value": "0-1F",
+              "label": "Black wins, White forfeited"
+            },
+            {
+              "value": "0-0",
+              "label": "Both forfeited"
+            }
+          ]
+        },
+        "match_fields": [
+          {
+            "key": "board_number",
+            "type": "integer",
+            "label": "Board",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 1,
+              "max": 200
+            }
+          },
+          {
+            "key": "moves",
+            "type": "integer",
+            "label": "Moves played",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 300
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 2
+        },
+        "tiebreakers": [
+          "points",
+          "buchholz_cut1",
+          "buchholz",
+          "sonneborn_berger",
+          "head_to_head",
+          "wins",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 150
+      },
+      "primary_ingame_id_field": "fide_id",
+      "primary_ingame_id_label": "FIDE ID",
+      "rating": {
+        "has_rating": true,
+        "rating_kinds": [
+          "rapid",
+          "classical"
+        ]
+      }
+    },
+    {
+      "slug": "chess-blitz",
+      "name": "Blitz chess",
+      "full_name": "Chess — Blitz (5 + 0)",
+      "short_name": "Blitz",
+      "category": "board",
+      "subcategory": "mind",
+      "status": "active",
+      "sort_order": 120,
+      "tagline": "Five minutes. Nine rounds. One evening.",
+      "description": "A whole tournament in an evening. Five minutes each, no increment, nine Swiss rounds. Fast pairings, fast results, and a lot of noise.",
+      "search_terms": [
+        "blitz",
+        "blitz chess",
+        "5+0",
+        "rapid fire chess",
+        "chess"
+      ],
+      "icon": {
+        "emoji": "⚡",
+        "sprite": "game-chess-blitz"
+      },
+      "accent": "#374151",
+      "age_min": 6,
+      "equipment": [
+        "The club provides boards and clocks"
+      ],
+      "rules_summary": [
+        "FIDE blitz rules. 5 minutes each, no increment.",
+        "An illegal move loses the game if the opponent claims it before making their own move.",
+        "You must press the clock with the same hand you moved with.",
+        "A flag fall is a loss only if the opponent has enough material to mate. Otherwise it is a draw.",
+        "Claims are made to the arbiter with both clocks stopped."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Game of skill. Fixed entry fee."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "key": "rating",
+          "type": "integer",
+          "label": "Your rating",
+          "help": "Any rating you have. Used only for round-one pairings.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "chess.rating",
+          "validation": {
+            "min": 400,
+            "max": 3200
+          }
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "swiss",
+        "seeding": "rating",
+        "third_place_match": false,
+        "min_participants": 8,
+        "max_participants": 80,
+        "check_in_opens_minutes_before": 30,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 100,
+        "typical_duration_minutes": 180,
+        "rounds": 9,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 12,
+        "buffer_minutes": 3,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null,
+        "time_control": "5+0"
+      },
+      "scoring": {
+        "model": "h2h_simple",
+        "side_labels": [
+          "White",
+          "Black"
+        ],
+        "side_assignment": "alternate",
+        "params": {
+          "win_points": 1.0,
+          "draw_points": 0.5,
+          "loss_points": 0.0,
+          "bye_points": 1.0,
+          "half_bye_points": 0.5,
+          "result_codes": [
+            {
+              "value": "1-0",
+              "label": "White wins"
+            },
+            {
+              "value": "0-1",
+              "label": "Black wins"
+            },
+            {
+              "value": "0.5-0.5",
+              "label": "Draw"
+            },
+            {
+              "value": "1-0F",
+              "label": "White wins, Black forfeited"
+            },
+            {
+              "value": "0-1F",
+              "label": "Black wins, White forfeited"
+            },
+            {
+              "value": "0-0",
+              "label": "Both forfeited"
+            }
+          ]
+        },
+        "match_fields": [
+          {
+            "key": "board_number",
+            "type": "integer",
+            "label": "Board",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 1,
+              "max": 200
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 2
+        },
+        "tiebreakers": [
+          "points",
+          "buchholz_cut1",
+          "buchholz",
+          "sonneborn_berger",
+          "wins",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 80
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": true,
+        "rating_kinds": [
+          "blitz"
+        ]
+      }
+    },
+    {
+      "slug": "carrom-singles",
+      "name": "Carrom singles",
+      "full_name": "Carrom — Singles",
+      "short_name": "Carrom",
+      "category": "board",
+      "subcategory": "tile",
+      "status": "active",
+      "sort_order": 130,
+      "tagline": "Best of three boards. Cover the queen.",
+      "description": "One on one across the board. A board is won at 25 points or when all coins are pocketed; a match is best of three boards. Powder is provided, technique is not.",
+      "search_terms": [
+        "carrom",
+        "carroms",
+        "karam",
+        "carrom board",
+        "singles"
+      ],
+      "icon": {
+        "emoji": "🎱",
+        "sprite": "game-carrom"
+      },
+      "accent": "#92400E",
+      "age_min": 8,
+      "equipment": [
+        "The club provides boards, coins, strikers and powder",
+        "Bring your own striker if you have a favourite"
+      ],
+      "rules_summary": [
+        "A board ends at 25 points or when all coins of one colour are pocketed, whichever comes first.",
+        "The queen must be covered by pocketing one of your own coins in the same or the next stroke, or it goes back to the centre.",
+        "Pocketing the striker returns one of your coins to the centre and the turn passes.",
+        "Feet stay off the board and off the opponent's chair. Elbows may not cross the diagonal line.",
+        "The winner of a board breaks the next one."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Game of skill."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": true
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "key": "grade",
+          "type": "select",
+          "label": "How would you rate yourself?",
+          "help": "Used for seeding only. Nobody checks.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "carrom.grade",
+          "options": [
+            {
+              "value": "beginner",
+              "label": "I play at home"
+            },
+            {
+              "value": "club",
+              "label": "I play at a club regularly"
+            },
+            {
+              "value": "district",
+              "label": "I have played district level or above"
+            }
+          ]
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "single_elim",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 8,
+        "max_participants": 64,
+        "check_in_opens_minutes_before": 45,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 100,
+        "typical_duration_minutes": 300,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 3,
+        "duration_minutes": 30,
+        "buffer_minutes": 10,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Player A",
+          "Player B"
+        ],
+        "side_assignment": "coin_toss",
+        "params": {
+          "set_label": "Board",
+          "best_of": 3,
+          "points_per_set": 25,
+          "win_by": 1,
+          "cap": 25,
+          "deciding_set_points": 25,
+          "record_set_scores": true
+        },
+        "match_fields": [
+          {
+            "key": "set_scores",
+            "type": "text",
+            "label": "Board scores",
+            "help": "Like 25-18, 21-25, 25-9. Comma separated.",
+            "placeholder": "25-18, 21-25, 25-9",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "pattern": "^\\s*\\d{1,2}\\s*-\\s*\\d{1,2}(\\s*,\\s*\\d{1,2}\\s*-\\s*\\d{1,2}){0,4}\\s*$",
+              "pattern_message": "Format: 25-18, 21-25, 25-9",
+              "max_length": 60
+            }
+          },
+          {
+            "key": "queen_count_a",
+            "type": "integer",
+            "label": "Queens — A",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 5
+            }
+          },
+          {
+            "key": "queen_count_b",
+            "type": "integer",
+            "label": "Queens — B",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 5
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "set_ratio",
+          "score_diff",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 100
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "carrom-doubles",
+      "name": "Carrom doubles",
+      "full_name": "Carrom — Doubles",
+      "short_name": "Carrom 2v2",
+      "category": "board",
+      "subcategory": "tile",
+      "status": "active",
+      "sort_order": 140,
+      "tagline": "Two a side, sitting opposite. Best of three boards.",
+      "description": "Same board, same rules, twice the arguments. Partners sit opposite each other and play alternate strokes. Register as a pair — you cannot swap partners once the draw is out.",
+      "search_terms": [
+        "carrom doubles",
+        "carrom",
+        "doubles",
+        "pairs",
+        "karam"
+      ],
+      "icon": {
+        "emoji": "🎱",
+        "sprite": "game-carrom"
+      },
+      "accent": "#78350F",
+      "age_min": 8,
+      "equipment": [
+        "The club provides boards, coins, strikers and powder"
+      ],
+      "rules_summary": [
+        "Partners sit opposite each other. The order of play rotates anticlockwise.",
+        "A board ends at 25 points or when all coins of one colour are pocketed.",
+        "The queen must be covered on the same or next stroke by the side that pocketed it.",
+        "Partners may talk between strokes but not during one.",
+        "Once the draw is published, partners cannot be changed. If one partner drops out, the pair withdraws."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Game of skill."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 2,
+        "team_size_max": 2,
+        "substitutes_max": 0,
+        "captain_required": true,
+        "member_label": "Partner",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": true,
+        "supports_pairs": true
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name",
+          "label": "Pair name",
+          "help": "Shown on the draw. Your two first names work fine.",
+          "required": false
+        },
+        {
+          "$preset": "captain_whatsapp",
+          "label": "Contact WhatsApp number"
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false
+        }
+      ],
+      "tournament_defaults": {
+        "format": "single_elim",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 8,
+        "max_participants": 32,
+        "check_in_opens_minutes_before": 45,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 150,
+        "typical_duration_minutes": 300,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 3,
+        "duration_minutes": 35,
+        "buffer_minutes": 10,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Pair A",
+          "Pair B"
+        ],
+        "side_assignment": "coin_toss",
+        "params": {
+          "set_label": "Board",
+          "best_of": 3,
+          "points_per_set": 25,
+          "win_by": 1,
+          "cap": 25,
+          "deciding_set_points": 25,
+          "record_set_scores": true
+        },
+        "match_fields": [
+          {
+            "key": "set_scores",
+            "type": "text",
+            "label": "Board scores",
+            "placeholder": "25-18, 21-25, 25-9",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "pattern": "^\\s*\\d{1,2}\\s*-\\s*\\d{1,2}(\\s*,\\s*\\d{1,2}\\s*-\\s*\\d{1,2}){0,4}\\s*$",
+              "pattern_message": "Format: 25-18, 21-25, 25-9",
+              "max_length": 60
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "set_ratio",
+          "score_diff",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 100
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "scrabble",
+      "name": "Scrabble",
+      "full_name": "Scrabble — Singles",
+      "short_name": "Scrabble",
+      "category": "board",
+      "subcategory": "word",
+      "status": "active",
+      "sort_order": 150,
+      "tagline": "Twenty-five minutes each. Spread decides ties.",
+      "description": "Tournament Scrabble with clocks. Twenty-five minutes per player, Collins word list, and your cumulative spread is the tiebreaker — so keep scoring even when the game is won.",
+      "search_terms": [
+        "scrabble",
+        "word game",
+        "spelling",
+        "collins",
+        "twl"
+      ],
+      "icon": {
+        "emoji": "🔤",
+        "sprite": "game-scrabble"
+      },
+      "accent": "#065F46",
+      "age_min": 10,
+      "equipment": [
+        "The club provides boards, tiles, racks and clocks",
+        "A pen for the score sheet"
+      ],
+      "rules_summary": [
+        "Collins Scrabble Words is the reference list. The club keeps one printed copy at the arbiter's table.",
+        "25 minutes per player. Every minute over costs 10 points.",
+        "A challenge is free the first time in a game, and costs 5 points after that.",
+        "Both players keep score. If the two sheets disagree, the arbiter's count is final.",
+        "Sign both sheets before leaving the table."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Game of skill."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "key": "word_list",
+          "type": "select",
+          "label": "Which word list do you play?",
+          "help": "The club runs Collins. This tells us if you need a heads-up.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "scrabble.word_list",
+          "options": [
+            {
+              "value": "collins",
+              "label": "Collins (CSW)"
+            },
+            {
+              "value": "twl",
+              "label": "TWL / North American"
+            },
+            {
+              "value": "unsure",
+              "label": "Not sure"
+            }
+          ]
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "swiss",
+        "seeding": "random",
+        "third_place_match": false,
+        "min_participants": 6,
+        "max_participants": 48,
+        "check_in_opens_minutes_before": 45,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 150,
+        "typical_duration_minutes": 420,
+        "rounds": 6,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 55,
+        "buffer_minutes": 10,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_simple",
+        "side_labels": [
+          "Player A",
+          "Player B"
+        ],
+        "side_assignment": "random",
+        "params": {
+          "unit": "points",
+          "target": null,
+          "win_by": 1,
+          "overtime": null,
+          "draw_allowed": true,
+          "higher_wins": true,
+          "record_margin": true
+        },
+        "match_fields": [
+          {
+            "key": "score_a",
+            "type": "integer",
+            "label": "Final score — A",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 900
+            }
+          },
+          {
+            "key": "score_b",
+            "type": "integer",
+            "label": "Final score — B",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 900
+            }
+          },
+          {
+            "key": "bingos_a",
+            "type": "integer",
+            "label": "Bingos — A",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 15
+            }
+          },
+          {
+            "key": "bingos_b",
+            "type": "integer",
+            "label": "Bingos — B",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 15
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 2
+        },
+        "tiebreakers": [
+          "points",
+          "score_diff",
+          "score_for",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 120
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "rummy-points",
+      "name": "Rummy",
+      "full_name": "Points Rummy — social play only",
+      "short_name": "Rummy",
+      "category": "board",
+      "subcategory": "card",
+      "status": "disabled",
+      "sort_order": 190,
+      "tagline": "Social play. No stakes, no entry fee, no prize money.",
+      "description": "Thirteen-card points rummy played face to face for club ranking points only. This game is switched off by default and can only run as a free, no-stakes social event. Do not enable it without a written legal opinion.",
+      "search_terms": [
+        "rummy",
+        "paplu",
+        "13 card",
+        "points rummy",
+        "cards"
+      ],
+      "icon": {
+        "emoji": "🃏",
+        "sprite": "game-rummy"
+      },
+      "accent": "#7F1D1D",
+      "age_min": 18,
+      "equipment": [
+        "The club provides cards"
+      ],
+      "rules_summary": [
+        "Thirteen cards, two decks with jokers. At least two sequences, one of them pure.",
+        "A wrong declaration costs a flat 80 points.",
+        "No money changes hands. There is no entry fee and there is no cash prize.",
+        "Players under 18 cannot register for this game at all.",
+        "The organizer will cancel the event on the spot if any side betting is seen."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": false,
+        "review_required": true,
+        "notes": "TODO_VERIFY — legal. Andhra Pradesh has amended its Gaming Act to prohibit gaming for stakes, and central law restricts online money games. Card games with any entry fee or cash prize are therefore off the table for this club. Keep status 'disabled' until the owner has written advice from a lawyer licensed in AP. If enabled, entry_fee must be 0 and prize_pool must be non-cash."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age",
+          "validation": {
+            "min": 18,
+            "max": 99
+          },
+          "help": "This event is 18 and over only."
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "points_lobby",
+        "seeding": "random",
+        "third_place_match": false,
+        "min_participants": 6,
+        "max_participants": 36,
+        "check_in_opens_minutes_before": 30,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 0,
+        "typical_duration_minutes": 180,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 20,
+        "buffer_minutes": 5,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "manual",
+        "side_labels": [],
+        "side_assignment": "none",
+        "params": {
+          "points_label": "Penalty points",
+          "lower_wins": true,
+          "min_per_match": 0,
+          "max_per_match": 80,
+          "aggregate": "sum",
+          "drop_worst": 1
+        },
+        "match_fields": [
+          {
+            "key": "points",
+            "type": "integer",
+            "label": "Points this deal",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 80
+            }
+          },
+          {
+            "key": "declared",
+            "type": "boolean",
+            "label": "Declared",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "default": false
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 0,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 0,
+          "walkover_win": 0,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "wins",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": false,
+        "default_weight_pct": 0
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "box-cricket",
+      "name": "Box cricket",
+      "full_name": "Box Cricket — 6-a-side, tennis ball",
+      "short_name": "Box",
+      "category": "outdoor",
+      "subcategory": "team_sport",
+      "status": "active",
+      "sort_order": 210,
+      "tagline": "Six a side, six overs, tennis ball, one long evening.",
+      "description": "The format Nellore actually plays. Six players a side on a netted turf, six overs each, tennis ball, one bounce off the net is in play. Teams of six to eight so you have cover when someone's shift runs late.",
+      "search_terms": [
+        "box cricket",
+        "cricket",
+        "tennis ball cricket",
+        "turf",
+        "gully cricket",
+        "6 a side",
+        "six a side"
+      ],
+      "icon": {
+        "emoji": "🏏",
+        "sprite": "game-box-cricket"
+      },
+      "accent": "#1D4ED8",
+      "age_min": 12,
+      "equipment": [
+        "Sports shoes — no spikes on turf",
+        "Your own bat if you have one; the club has spares",
+        "Tennis balls are provided",
+        "Water bottle"
+      ],
+      "rules_summary": [
+        "Six overs a side, six players on the field, maximum two overs per bowler.",
+        "Tennis ball. A ball hit into the side or back net stays in play; over the net on the full is out.",
+        "Last man bats: when five are out, the last batter continues with the previous batter as a runner.",
+        "No LBW. A wide or a no-ball is one run plus a re-bowl.",
+        "A tie goes to a one-over eliminator. If that ties, the team that lost fewer wickets in the match wins."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Sporting event with a team entry fee and a published prize table."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 6,
+        "team_size_max": 8,
+        "substitutes_max": 2,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "alt_whatsapp"
+        },
+        {
+          "$preset": "jersey_colour"
+        },
+        {
+          "$preset": "locality",
+          "label": "Which part of Nellore is the team from?"
+        },
+        {
+          "$preset": "preferred_slot"
+        },
+        {
+          "key": "home_ground",
+          "type": "text",
+          "label": "Where do you usually play?",
+          "help": "Optional. Helps us pick a fair venue.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "validation": {
+            "max_length": 60
+          }
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "jersey_number"
+        },
+        {
+          "key": "role",
+          "type": "select",
+          "label": "Role",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "options": [
+            {
+              "value": "batter",
+              "label": "Batter"
+            },
+            {
+              "value": "bowler",
+              "label": "Bowler"
+            },
+            {
+              "value": "allrounder",
+              "label": "All-rounder"
+            },
+            {
+              "value": "keeper",
+              "label": "Wicket-keeper"
+            }
+          ]
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false
+        }
+      ],
+      "tournament_defaults": {
+        "format": "round_robin",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 6,
+        "max_participants": 24,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 1200,
+        "typical_duration_minutes": 600,
+        "multi_stage": true
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 45,
+        "buffer_minutes": 15,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_innings",
+        "side_labels": [
+          "Batting first",
+          "Batting second"
+        ],
+        "side_assignment": "toss",
+        "params": {
+          "overs": 6,
+          "balls_per_over": 6,
+          "wickets": 5,
+          "ball_type": "tennis",
+          "players_on_field": 6,
+          "max_overs_per_bowler": 2,
+          "super_over": true,
+          "net_run_rate": true,
+          "lbw": false
+        },
+        "match_fields": [
+          {
+            "key": "toss_winner",
+            "type": "select",
+            "label": "Toss won by",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "a",
+                "label": "Team A"
+              },
+              {
+                "value": "b",
+                "label": "Team B"
+              }
+            ]
+          },
+          {
+            "key": "elected",
+            "type": "select",
+            "label": "Elected to",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "bat",
+                "label": "Bat"
+              },
+              {
+                "value": "bowl",
+                "label": "Bowl"
+              }
+            ]
+          },
+          {
+            "key": "runs_1",
+            "type": "integer",
+            "label": "1st innings runs",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 400
+            }
+          },
+          {
+            "key": "wickets_1",
+            "type": "integer",
+            "label": "1st innings wickets",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 10
+            }
+          },
+          {
+            "key": "overs_1",
+            "type": "decimal",
+            "label": "1st innings overs",
+            "help": "Like 5.4 for five overs and four balls.",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 50,
+              "step": 0.1
+            }
+          },
+          {
+            "key": "runs_2",
+            "type": "integer",
+            "label": "2nd innings runs",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 400
+            }
+          },
+          {
+            "key": "wickets_2",
+            "type": "integer",
+            "label": "2nd innings wickets",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 10
+            }
+          },
+          {
+            "key": "overs_2",
+            "type": "decimal",
+            "label": "2nd innings overs",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 50,
+              "step": 0.1
+            }
+          },
+          {
+            "key": "super_over_a",
+            "type": "integer",
+            "label": "Super over — A",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 60
+            }
+          },
+          {
+            "key": "super_over_b",
+            "type": "integer",
+            "label": "Super over — B",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 60
+            }
+          },
+          {
+            "key": "player_of_match",
+            "type": "text",
+            "label": "Player of the match",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 60
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 1,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "net_run_rate",
+          "head_to_head",
+          "wins",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 150
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "badminton-singles",
+      "name": "Badminton singles",
+      "full_name": "Badminton — Men's / Women's Singles",
+      "short_name": "BD Singles",
+      "category": "outdoor",
+      "subcategory": "racket",
+      "status": "active",
+      "sort_order": 220,
+      "tagline": "Best of three to 21. Rally point.",
+      "description": "Indoor singles on a wooden or synthetic court. Best of three games to 21, rally point, cap at 30. Feather shuttles for the knockout rounds, nylon for the groups.",
+      "search_terms": [
+        "badminton",
+        "shuttle",
+        "singles",
+        "shuttlecock",
+        "bd"
+      ],
+      "icon": {
+        "emoji": "🏸",
+        "sprite": "game-badminton"
+      },
+      "accent": "#0E7490",
+      "age_min": 10,
+      "equipment": [
+        "Your own racquet",
+        "Non-marking indoor shoes — the court will turn you away otherwise",
+        "Shuttles are provided"
+      ],
+      "rules_summary": [
+        "Best of three games to 21, rally point scoring, win by two, hard cap at 30.",
+        "Change ends after each game and at 11 in the deciding game.",
+        "60-second break at 11 points, 120-second break between games.",
+        "A player who is not on court five minutes after being called loses the match.",
+        "The winner reports the score to the organizer within five minutes of finishing."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Sporting event with a fixed entry fee."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": true
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "key": "category_entered",
+          "type": "select",
+          "label": "Category",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "options": [
+            {
+              "value": "open",
+              "label": "Open"
+            },
+            {
+              "value": "mens",
+              "label": "Men's"
+            },
+            {
+              "value": "womens",
+              "label": "Women's"
+            },
+            {
+              "value": "u15",
+              "label": "Under 15"
+            },
+            {
+              "value": "u19",
+              "label": "Under 19"
+            },
+            {
+              "value": "veterans",
+              "label": "Veterans (35+)"
+            }
+          ]
+        },
+        {
+          "key": "playing_level",
+          "type": "select",
+          "label": "How often do you play?",
+          "help": "For seeding only.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "badminton.level",
+          "options": [
+            {
+              "value": "casual",
+              "label": "Once in a while"
+            },
+            {
+              "value": "weekly",
+              "label": "Every week"
+            },
+            {
+              "value": "coached",
+              "label": "I train under a coach"
+            },
+            {
+              "value": "competitive",
+              "label": "I play district or state events"
+            }
+          ]
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "single_elim",
+        "seeding": "manual",
+        "third_place_match": true,
+        "min_participants": 8,
+        "max_participants": 64,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 250,
+        "typical_duration_minutes": 480,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 3,
+        "duration_minutes": 30,
+        "buffer_minutes": 10,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Player A",
+          "Player B"
+        ],
+        "side_assignment": "coin_toss",
+        "params": {
+          "set_label": "Game",
+          "best_of": 3,
+          "points_per_set": 21,
+          "win_by": 2,
+          "cap": 30,
+          "deciding_set_points": 21,
+          "record_set_scores": true
+        },
+        "match_fields": [
+          {
+            "key": "set_scores",
+            "type": "text",
+            "label": "Game scores",
+            "help": "Like 21-18, 19-21, 21-15. Comma separated.",
+            "placeholder": "21-18, 19-21, 21-15",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "pattern": "^\\s*\\d{1,2}\\s*-\\s*\\d{1,2}(\\s*,\\s*\\d{1,2}\\s*-\\s*\\d{1,2}){0,4}\\s*$",
+              "pattern_message": "Format: 21-18, 19-21, 21-15",
+              "max_length": 60
+            }
+          },
+          {
+            "key": "court",
+            "type": "text",
+            "label": "Court",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 20
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "set_ratio",
+          "score_diff",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 120
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "badminton-doubles",
+      "name": "Badminton doubles",
+      "full_name": "Badminton — Doubles / Mixed Doubles",
+      "short_name": "BD Doubles",
+      "category": "outdoor",
+      "subcategory": "racket",
+      "status": "active",
+      "sort_order": 230,
+      "tagline": "Two a side. Best of three to 21.",
+      "description": "Doubles and mixed doubles on the same courts and the same scoring as singles. Register as a fixed pair. If your partner drops out you can name a replacement up to check-in, and after that the pair withdraws.",
+      "search_terms": [
+        "badminton doubles",
+        "mixed doubles",
+        "badminton",
+        "shuttle",
+        "pairs"
+      ],
+      "icon": {
+        "emoji": "🏸",
+        "sprite": "game-badminton"
+      },
+      "accent": "#155E75",
+      "age_min": 10,
+      "equipment": [
+        "Your own racquet",
+        "Non-marking indoor shoes",
+        "Shuttles are provided"
+      ],
+      "rules_summary": [
+        "Best of three games to 21, rally point, win by two, cap at 30.",
+        "Standard doubles service rules. Serving side alternates courts as it scores.",
+        "In mixed doubles, one man and one woman per pair. The organizer checks at check-in.",
+        "A replacement partner can be named up to check-in with the organizer's approval. After check-in the pair is locked.",
+        "If one partner is unfit to continue, the pair retires and the opponent advances."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Sporting event with a fixed entry fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 2,
+        "team_size_max": 2,
+        "substitutes_max": 0,
+        "captain_required": true,
+        "member_label": "Partner",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": true
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name",
+          "label": "Pair name",
+          "required": false,
+          "help": "Optional. We show both names on the draw anyway."
+        },
+        {
+          "$preset": "captain_whatsapp",
+          "label": "Contact WhatsApp number"
+        },
+        {
+          "key": "category_entered",
+          "type": "select",
+          "label": "Category",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "options": [
+            {
+              "value": "mens",
+              "label": "Men's doubles"
+            },
+            {
+              "value": "womens",
+              "label": "Women's doubles"
+            },
+            {
+              "value": "mixed",
+              "label": "Mixed doubles"
+            },
+            {
+              "value": "open",
+              "label": "Open doubles"
+            }
+          ]
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "player_whatsapp",
+          "required": false
+        },
+        {
+          "key": "playing_level",
+          "type": "select",
+          "label": "How often do you play?",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "profile_key": "badminton.level",
+          "options": [
+            {
+              "value": "casual",
+              "label": "Once in a while"
+            },
+            {
+              "value": "weekly",
+              "label": "Every week"
+            },
+            {
+              "value": "coached",
+              "label": "I train under a coach"
+            },
+            {
+              "value": "competitive",
+              "label": "I play district or state events"
+            }
+          ]
+        }
+      ],
+      "tournament_defaults": {
+        "format": "single_elim",
+        "seeding": "manual",
+        "third_place_match": true,
+        "min_participants": 8,
+        "max_participants": 48,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 400,
+        "typical_duration_minutes": 480,
+        "multi_stage": false
+      },
+      "match_defaults": {
+        "best_of": 3,
+        "duration_minutes": 30,
+        "buffer_minutes": 10,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Pair A",
+          "Pair B"
+        ],
+        "side_assignment": "coin_toss",
+        "params": {
+          "set_label": "Game",
+          "best_of": 3,
+          "points_per_set": 21,
+          "win_by": 2,
+          "cap": 30,
+          "deciding_set_points": 21,
+          "record_set_scores": true
+        },
+        "match_fields": [
+          {
+            "key": "set_scores",
+            "type": "text",
+            "label": "Game scores",
+            "placeholder": "21-18, 19-21, 21-15",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "pattern": "^\\s*\\d{1,2}\\s*-\\s*\\d{1,2}(\\s*,\\s*\\d{1,2}\\s*-\\s*\\d{1,2}){0,4}\\s*$",
+              "pattern_message": "Format: 21-18, 19-21, 21-15",
+              "max_length": 60
+            }
+          },
+          {
+            "key": "court",
+            "type": "text",
+            "label": "Court",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 20
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "set_ratio",
+          "score_diff",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 120
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "table-tennis-singles",
+      "name": "Table tennis",
+      "full_name": "Table Tennis — Singles",
+      "short_name": "TT",
+      "category": "outdoor",
+      "subcategory": "racket",
+      "status": "active",
+      "sort_order": 240,
+      "tagline": "Best of five to 11. Two serves each.",
+      "description": "Indoor singles, best of five games to 11 points, win by two. Fast to run — a full 32-player draw fits in an evening on two tables.",
+      "search_terms": [
+        "table tennis",
+        "tt",
+        "ping pong",
+        "pingpong",
+        "tabletennis"
+      ],
+      "icon": {
+        "emoji": "🏓",
+        "sprite": "game-table-tennis"
+      },
+      "accent": "#4338CA",
+      "age_min": 8,
+      "equipment": [
+        "Your own bat if you have one; the club has spares",
+        "Non-marking shoes",
+        "Balls are provided"
+      ],
+      "rules_summary": [
+        "Best of five games to 11, win by two.",
+        "Two serves each, alternating, until 10-10 — after that, one serve each.",
+        "Change ends after every game and at 5 in the deciding game.",
+        "Let serves are replayed with no penalty.",
+        "Report the score at the desk immediately. The table is needed for the next match."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Sporting event with a fixed entry fee."
+      },
+      "participant": {
+        "type": "solo",
+        "team_size_min": 1,
+        "team_size_max": 1,
+        "substitutes_max": 0,
+        "captain_required": false,
+        "member_label": "Player",
+        "roster_locked_at": "registration",
+        "allow_partial_roster": false,
+        "free_agent_pool": false,
+        "supports_pairs": true
+      },
+      "registration_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "player_whatsapp"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "$preset": "guardian_whatsapp"
+        },
+        {
+          "$preset": "locality"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [],
+      "tournament_defaults": {
+        "format": "round_robin",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 8,
+        "max_participants": 48,
+        "check_in_opens_minutes_before": 45,
+        "check_in_closes_minutes_before": 10,
+        "entry_fee_inr_default": 150,
+        "typical_duration_minutes": 300,
+        "multi_stage": true
+      },
+      "match_defaults": {
+        "best_of": 5,
+        "duration_minutes": 20,
+        "buffer_minutes": 5,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Player A",
+          "Player B"
+        ],
+        "side_assignment": "coin_toss",
+        "params": {
+          "set_label": "Game",
+          "best_of": 5,
+          "points_per_set": 11,
+          "win_by": 2,
+          "cap": null,
+          "deciding_set_points": 11,
+          "record_set_scores": true
+        },
+        "match_fields": [
+          {
+            "key": "set_scores",
+            "type": "text",
+            "label": "Game scores",
+            "placeholder": "11-7, 9-11, 11-6, 11-8",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "pattern": "^\\s*\\d{1,2}\\s*-\\s*\\d{1,2}(\\s*,\\s*\\d{1,2}\\s*-\\s*\\d{1,2}){0,4}\\s*$",
+              "pattern_message": "Format: 11-7, 9-11, 11-6",
+              "max_length": 60
+            }
+          },
+          {
+            "key": "table",
+            "type": "text",
+            "label": "Table",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 20
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "set_ratio",
+          "score_diff",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 100
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "volleyball",
+      "name": "Volleyball",
+      "full_name": "Volleyball — 6-a-side",
+      "short_name": "Volleyball",
+      "category": "outdoor",
+      "subcategory": "team_sport",
+      "status": "active",
+      "sort_order": 250,
+      "tagline": "Best of three sets to 25. Deciding set to 15.",
+      "description": "Six a side on a sand or clay court, best of three sets, rally point. Squads of six to twelve so rotations and substitutions work over a long day.",
+      "search_terms": [
+        "volleyball",
+        "volley",
+        "vb",
+        "6 a side volleyball"
+      ],
+      "icon": {
+        "emoji": "🏐",
+        "sprite": "game-volleyball"
+      },
+      "accent": "#C2410C",
+      "age_min": 14,
+      "equipment": [
+        "Court shoes or bare feet on sand",
+        "Knee pads if you use them",
+        "Balls and net are provided",
+        "Water bottle"
+      ],
+      "rules_summary": [
+        "Best of three sets. Sets one and two to 25, deciding set to 15, all win by two, no cap.",
+        "Six players on court, six substitutions per set.",
+        "Rally point scoring. A touch off the block does not count as one of the three touches.",
+        "Teams change ends after every set and at 8 in the deciding set.",
+        "A team that cannot field six players at the scheduled start after a 10-minute grace period forfeits the match."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Sporting event with a team entry fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 6,
+        "team_size_max": 12,
+        "substitutes_max": 6,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "alt_whatsapp"
+        },
+        {
+          "$preset": "jersey_colour"
+        },
+        {
+          "$preset": "locality",
+          "label": "Which part of Nellore is the team from?"
+        },
+        {
+          "$preset": "preferred_slot"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "jersey_number"
+        },
+        {
+          "key": "position",
+          "type": "select",
+          "label": "Position",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "options": [
+            {
+              "value": "setter",
+              "label": "Setter"
+            },
+            {
+              "value": "spiker",
+              "label": "Spiker / attacker"
+            },
+            {
+              "value": "blocker",
+              "label": "Blocker"
+            },
+            {
+              "value": "libero",
+              "label": "Libero"
+            },
+            {
+              "value": "universal",
+              "label": "Anywhere"
+            }
+          ]
+        }
+      ],
+      "tournament_defaults": {
+        "format": "round_robin",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 4,
+        "max_participants": 16,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 1000,
+        "typical_duration_minutes": 540,
+        "multi_stage": true
+      },
+      "match_defaults": {
+        "best_of": 3,
+        "duration_minutes": 45,
+        "buffer_minutes": 15,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Team A",
+          "Team B"
+        ],
+        "side_assignment": "toss",
+        "params": {
+          "set_label": "Set",
+          "best_of": 3,
+          "points_per_set": 25,
+          "win_by": 2,
+          "cap": null,
+          "deciding_set_points": 15,
+          "record_set_scores": true
+        },
+        "match_fields": [
+          {
+            "key": "set_scores",
+            "type": "text",
+            "label": "Set scores",
+            "help": "Like 25-21, 22-25, 15-12.",
+            "placeholder": "25-21, 22-25, 15-12",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "pattern": "^\\s*\\d{1,2}\\s*-\\s*\\d{1,2}(\\s*,\\s*\\d{1,2}\\s*-\\s*\\d{1,2}){0,4}\\s*$",
+              "pattern_message": "Format: 25-21, 22-25, 15-12",
+              "max_length": 60
+            }
+          },
+          {
+            "key": "court",
+            "type": "text",
+            "label": "Court",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 20
+            }
+          },
+          {
+            "key": "player_of_match",
+            "type": "text",
+            "label": "Player of the match",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 60
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "set_ratio",
+          "score_diff",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 130
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "throwball",
+      "name": "Throwball",
+      "full_name": "Throwball — 7-a-side",
+      "short_name": "Throwball",
+      "category": "outdoor",
+      "subcategory": "team_sport",
+      "status": "active",
+      "sort_order": 260,
+      "tagline": "Seven a side. Catch, hold, throw. Best of three sets.",
+      "description": "Played over a high net, seven a side, catch and throw rather than volley. Big in Andhra school and college circuits and one of the easiest events to fill a women's draw for.",
+      "search_terms": [
+        "throwball",
+        "throw ball",
+        "throwbal",
+        "7 a side"
+      ],
+      "icon": {
+        "emoji": "🤾",
+        "sprite": "game-throwball"
+      },
+      "accent": "#9D174D",
+      "age_min": 12,
+      "equipment": [
+        "Court shoes",
+        "Balls and net are provided",
+        "Water bottle"
+      ],
+      "rules_summary": [
+        "Best of three sets to 25, win by two, no cap. Deciding set to 15.",
+        "The ball must be caught cleanly with both hands above the waist and thrown back within three seconds.",
+        "One-hand catches, holding below the waist and double touches are faults.",
+        "Seven players on court, five substitutions per set.",
+        "A serve that touches the net and lands in is in play."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Sporting event with a team entry fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 7,
+        "team_size_max": 12,
+        "substitutes_max": 5,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": true,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "jersey_colour"
+        },
+        {
+          "key": "category_entered",
+          "type": "select",
+          "label": "Category",
+          "required": true,
+          "visibility": "public",
+          "pii": false,
+          "options": [
+            {
+              "value": "womens",
+              "label": "Women's"
+            },
+            {
+              "value": "mens",
+              "label": "Men's"
+            },
+            {
+              "value": "mixed",
+              "label": "Mixed"
+            },
+            {
+              "value": "school",
+              "label": "School (under 17)"
+            },
+            {
+              "value": "college",
+              "label": "College"
+            }
+          ]
+        },
+        {
+          "$preset": "locality",
+          "label": "Which part of Nellore is the team from?"
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "jersey_number"
+        },
+        {
+          "$preset": "age"
+        }
+      ],
+      "tournament_defaults": {
+        "format": "round_robin",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 4,
+        "max_participants": 16,
+        "check_in_opens_minutes_before": 60,
+        "check_in_closes_minutes_before": 15,
+        "entry_fee_inr_default": 800,
+        "typical_duration_minutes": 420,
+        "multi_stage": true
+      },
+      "match_defaults": {
+        "best_of": 3,
+        "duration_minutes": 40,
+        "buffer_minutes": 10,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_sets",
+        "side_labels": [
+          "Team A",
+          "Team B"
+        ],
+        "side_assignment": "toss",
+        "params": {
+          "set_label": "Set",
+          "best_of": 3,
+          "points_per_set": 25,
+          "win_by": 2,
+          "cap": null,
+          "deciding_set_points": 15,
+          "record_set_scores": true
+        },
+        "match_fields": [
+          {
+            "key": "set_scores",
+            "type": "text",
+            "label": "Set scores",
+            "placeholder": "25-19, 25-21",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "pattern": "^\\s*\\d{1,2}\\s*-\\s*\\d{1,2}(\\s*,\\s*\\d{1,2}\\s*-\\s*\\d{1,2}){0,4}\\s*$",
+              "pattern_message": "Format: 25-19, 25-21",
+              "max_length": 60
+            }
+          },
+          {
+            "key": "court",
+            "type": "text",
+            "label": "Court",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 20
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 2,
+          "draw": 0,
+          "loss": 0,
+          "no_result": 1,
+          "walkover_win": 2,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "set_ratio",
+          "score_diff",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 120
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    },
+    {
+      "slug": "kabaddi",
+      "name": "Kabaddi",
+      "full_name": "Kabaddi — 7-a-side",
+      "short_name": "Kabaddi",
+      "category": "outdoor",
+      "subcategory": "team_sport",
+      "status": "active",
+      "sort_order": 270,
+      "tagline": "Two halves of twenty minutes. Raid, tackle, survive.",
+      "description": "Seven a side on a mat or a prepared mud court, two twenty-minute halves with a five-minute break. Points for raids, tackles, all-outs and bonus. Draws go to a golden raid in the knockouts.",
+      "search_terms": [
+        "kabaddi",
+        "kabbadi",
+        "chedugudu",
+        "hu tu tu",
+        "7 a side kabaddi"
+      ],
+      "icon": {
+        "emoji": "🤼",
+        "sprite": "game-kabaddi"
+      },
+      "accent": "#6B21A8",
+      "age_min": 16,
+      "equipment": [
+        "Kabaddi kit or a fitted t-shirt and shorts",
+        "Nails cut short — the referee checks",
+        "No jewellery, no oil on the skin",
+        "Water bottle"
+      ],
+      "rules_summary": [
+        "Two halves of 20 minutes with a 5-minute break. Seven players a side.",
+        "A raid must be completed within 30 seconds with a continuous cant.",
+        "Three unsuccessful raids in a row by the same team makes the third a do-or-die raid.",
+        "An all-out is worth two extra points.",
+        "Oil, sweat-cream and long nails are checked before the match. A player who fails the check does not play."
+      ],
+      "rules_url": null,
+      "compliance": {
+        "real_money_prizes_allowed": true,
+        "review_required": false,
+        "notes": "Sporting event with a team entry fee."
+      },
+      "participant": {
+        "type": "team",
+        "team_size_min": 7,
+        "team_size_max": 12,
+        "substitutes_max": 5,
+        "captain_required": true,
+        "member_label": "Player",
+        "roster_locked_at": "check_in",
+        "allow_partial_roster": true,
+        "free_agent_pool": false,
+        "supports_pairs": false
+      },
+      "registration_fields": [
+        {
+          "$preset": "team_name"
+        },
+        {
+          "$preset": "captain_name"
+        },
+        {
+          "$preset": "captain_whatsapp"
+        },
+        {
+          "$preset": "alt_whatsapp"
+        },
+        {
+          "$preset": "jersey_colour"
+        },
+        {
+          "$preset": "locality",
+          "label": "Which part of Nellore is the team from?"
+        },
+        {
+          "key": "weight_category",
+          "type": "select",
+          "label": "Weight category",
+          "help": "Only if the event is run with weight categories. The organizer will say.",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "options": [
+            {
+              "value": "open",
+              "label": "Open"
+            },
+            {
+              "value": "u75",
+              "label": "Under 75 kg"
+            },
+            {
+              "value": "u85",
+              "label": "Under 85 kg"
+            }
+          ]
+        },
+        {
+          "$preset": "agree_rules"
+        }
+      ],
+      "member_fields": [
+        {
+          "$preset": "player_name"
+        },
+        {
+          "$preset": "jersey_number"
+        },
+        {
+          "$preset": "age"
+        },
+        {
+          "key": "role",
+          "type": "select",
+          "label": "Role",
+          "required": false,
+          "visibility": "public",
+          "pii": false,
+          "options": [
+            {
+              "value": "raider",
+              "label": "Raider"
+            },
+            {
+              "value": "defender",
+              "label": "Defender"
+            },
+            {
+              "value": "allrounder",
+              "label": "All-rounder"
+            }
+          ]
+        }
+      ],
+      "tournament_defaults": {
+        "format": "round_robin",
+        "seeding": "random",
+        "third_place_match": true,
+        "min_participants": 4,
+        "max_participants": 16,
+        "check_in_opens_minutes_before": 90,
+        "check_in_closes_minutes_before": 20,
+        "entry_fee_inr_default": 1500,
+        "typical_duration_minutes": 540,
+        "multi_stage": true
+      },
+      "match_defaults": {
+        "best_of": 1,
+        "duration_minutes": 45,
+        "buffer_minutes": 20,
+        "venue_kind": "onsite",
+        "needs_lobby_code": false,
+        "lobby_code_label": null,
+        "lobby_password_label": null
+      },
+      "scoring": {
+        "model": "h2h_simple",
+        "side_labels": [
+          "Team A",
+          "Team B"
+        ],
+        "side_assignment": "toss",
+        "params": {
+          "unit": "points",
+          "target": null,
+          "win_by": 1,
+          "overtime": "golden_raid",
+          "draw_allowed": true,
+          "higher_wins": true,
+          "record_margin": true
+        },
+        "match_fields": [
+          {
+            "key": "score_a",
+            "type": "integer",
+            "label": "Points — Team A",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 150
+            }
+          },
+          {
+            "key": "score_b",
+            "type": "integer",
+            "label": "Points — Team B",
+            "required": true,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 150
+            }
+          },
+          {
+            "key": "all_outs_a",
+            "type": "integer",
+            "label": "All-outs — Team A",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 10
+            }
+          },
+          {
+            "key": "all_outs_b",
+            "type": "integer",
+            "label": "All-outs — Team B",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "min": 0,
+              "max": 10
+            }
+          },
+          {
+            "key": "golden_raid_winner",
+            "type": "select",
+            "label": "Golden raid won by",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "options": [
+              {
+                "value": "a",
+                "label": "Team A"
+              },
+              {
+                "value": "b",
+                "label": "Team B"
+              }
+            ]
+          },
+          {
+            "key": "player_of_match",
+            "type": "text",
+            "label": "Player of the match",
+            "required": false,
+            "visibility": "public",
+            "pii": false,
+            "validation": {
+              "max_length": 60
+            }
+          }
+        ]
+      },
+      "standings": {
+        "match_points": {
+          "win": 5,
+          "draw": 3,
+          "loss": 0,
+          "no_result": 3,
+          "walkover_win": 5,
+          "forfeit_loss": 0,
+          "points_divisor": 1
+        },
+        "tiebreakers": [
+          "points",
+          "score_diff",
+          "score_for",
+          "head_to_head",
+          "seed"
+        ]
+      },
+      "leaderboard": {
+        "counts_toward_global": true,
+        "default_weight_pct": 150
+      },
+      "primary_ingame_id_field": null,
+      "primary_ingame_id_label": null,
+      "rating": {
+        "has_rating": false,
+        "rating_kinds": []
+      }
+    }
+  ],
+  "$formats": [
+    "single_elim",
+    "double_elim",
+    "round_robin",
+    "swiss",
+    "points_lobby"
+  ],
+  "$categories": [
+    "esport",
+    "board",
+    "outdoor"
+  ],
+  "$seed_sources": [
+    "registration",
+    "random",
+    "manual",
+    "rating",
+    "previous_stage"
+  ],
+  "$tiebreakers": [
+    "points",
+    "wins",
+    "head_to_head",
+    "score_diff",
+    "score_for",
+    "kills",
+    "best_placement",
+    "buchholz",
+    "buchholz_cut1",
+    "sonneborn_berger",
+    "set_ratio",
+    "net_run_rate",
+    "fewest_losses",
+    "seed"
+  ]
+}
